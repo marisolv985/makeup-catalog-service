@@ -51,7 +51,7 @@
               <div class="cart-qty-form">
                 <form action="/cart/remove" method="POST" style="display:inline">
                   <input type="hidden" name="sku" value="<%= item.productoSku %>">
-                  <button type="submit" class="qty-btn qty-btn-remove" title="Eliminar producto"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+                  <button type="submit" class="qty-btn qty-btn-remove" title="Eliminar producto"><i data-lucide="minus" style="width:14px;height:14px"></i></button>
                 </form>
                 <span class="qty-value"><%= item.cantidad %></span>
                 <form action="/cart/update" method="POST" style="display:inline">
