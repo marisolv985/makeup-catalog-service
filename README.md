@@ -52,7 +52,7 @@ El proyecto sigue el patrón **MVC + Clean Architecture**, separando las respons
 
 ```bash
 # Clonar el repositorio
-git clone https://github.com/glowflow/makeup-catalog-service.git
+git clone https://github.com/marisolv985/makeup-catalog-service.git
 
 # Entrar al directorio
 cd makeup-catalog-service
@@ -263,7 +263,8 @@ makeup-catalog-service/
     ├── repositories/
     │   └── cosmeticsRepository.js
     ├── models/
-    │   └── Product.js      # Modelo Mongoose
+    │   ├── Product.js      # Modelo Mongoose
+    │   └── User.js         # Modelo de usuario con roles
     ├── middlewares/
     │   ├── authMiddleware.js
     │   ├── errorHandler.js
@@ -272,6 +273,7 @@ makeup-catalog-service/
     ├── validators/
     │   └── cosmeticsValidator.js
     ├── routes/
+    │   ├── authRoutes.js         # Login, registro, logout
     │   ├── cosmeticsRoutes.js    # Rutas API
     │   └── views/
     │       └── viewRoutes.js     # Rutas de vistas
@@ -286,6 +288,29 @@ makeup-catalog-service/
     └── docs/
         └── swagger.js
 ```
+
+## Sistema de Autenticación
+
+| Componente | Detalle |
+|---|---|
+| **Login/Registro** | Formularios EJS con validación server-side |
+| **JWT** | Tokens en cookies (`gf_token`), httpOnly, sameSite: lax |
+| **Roles** | ADMIN, EDITOR, VIEWER (mongoose enum en User model) |
+| **Admin por defecto** | Usuario: `admin` / Contraseña: `admin123` (rol ADMIN) |
+
+### Seed de datos iniciales
+
+```bash
+npm run seed
+```
+
+Crea 18 productos de ejemplo (6 categorías) y el usuario admin.
+
+## Interfaz de Usuario
+
+- **Lucide Icons**: Iconos SVG modernos vía CDN (`lucide@0.344.0`), reemplazando emojis en toda la UI.
+- **Diseño responsivo**: Filtros colapsables, tarjetas de producto, paginación.
+- **Temas de color**: Paleta rosa/purple con variables CSS customizables.
 
 ## Buenas Prácticas Aplicadas
 
