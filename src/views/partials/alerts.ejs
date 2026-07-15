@@ -1,0 +1,27 @@
+<% if (typeof successMessage !== 'undefined' && successMessage) { %>
+  <div class="alert alert-success">
+    <i data-lucide="check-circle" class="alert-icon"></i>
+    <%= successMessage %>
+    <button class="alert-close" onclick="this.parentElement.remove()"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+  </div>
+<% } %>
+
+<% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+  <div class="alert alert-error">
+    <i data-lucide="alert-circle" class="alert-icon"></i>
+    <%= errorMessage %>
+    <button class="alert-close" onclick="this.parentElement.remove()"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+  </div>
+<% } %>
+
+<% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+  <div class="alert alert-error">
+    <i data-lucide="alert-circle" class="alert-icon"></i>
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+    <button class="alert-close" onclick="this.parentElement.remove()"><i data-lucide="x" style="width:14px;height:14px"></i></button>
+  </div>
+<% } %>

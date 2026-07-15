@@ -1,0 +1,72 @@
+<%- include('../layouts/header') %>
+
+<section class="page-header">
+  <h1>Gestión de Inventario</h1>
+  <p class="subtitle">Administra el stock de productos del catálogo</p>
+</section>
+
+<section class="inventory-section">
+  <div class="inventory-actions">
+    <div class="inventory-card">
+      <h3>Descontar Stock</h3>
+      <p>Reduce el inventario de un producto específico.</p>
+      <form id="decreaseForm" class="inventory-form">
+        <div class="form-group">
+          <label for="dec-sku">SKU del Producto</label>
+          <input type="text" id="dec-sku" name="sku" required placeholder="COSM-LIP-RED-001">
+        </div>
+        <div class="form-group">
+          <label for="dec-cantidad">Cantidad</label>
+          <input type="number" id="dec-cantidad" name="cantidad" required min="1" value="1" placeholder="1">
+        </div>
+        <button type="submit" class="btn btn-danger">Descontar</button>
+      </form>
+      <div id="decreaseResult" class="inventory-result" style="display:none;"></div>
+    </div>
+
+    <div class="inventory-card">
+      <h3>Incrementar Stock</h3>
+      <p>Aumenta el inventario de un producto específico.</p>
+      <form id="increaseForm" class="inventory-form">
+        <div class="form-group">
+          <label for="inc-sku">SKU del Producto</label>
+          <input type="text" id="inc-sku" name="sku" required placeholder="COSM-LIP-RED-001">
+        </div>
+        <div class="form-group">
+          <label for="inc-cantidad">Cantidad</label>
+          <input type="number" id="inc-cantidad" name="cantidad" required min="1" value="1" placeholder="1">
+        </div>
+        <button type="submit" class="btn btn-primary">Incrementar</button>
+      </form>
+      <div id="increaseResult" class="inventory-result" style="display:none;"></div>
+    </div>
+
+    <div class="inventory-card">
+      <h3>Consultar Stock</h3>
+      <p>Verifica el stock actual de un producto por SKU.</p>
+      <form id="stockForm" class="inventory-form">
+        <div class="form-group">
+          <label for="chk-sku">SKU del Producto</label>
+          <input type="text" id="chk-sku" name="sku" required placeholder="COSM-LIP-RED-001">
+        </div>
+        <button type="submit" class="btn btn-secondary">Consultar</button>
+      </form>
+      <div id="stockResult" class="inventory-result" style="display:none;"></div>
+    </div>
+
+    <div class="inventory-card">
+      <h3>Verificar Existencia</h3>
+      <p>Comprueba si un producto existe en el catálogo.</p>
+      <form id="existsForm" class="inventory-form">
+        <div class="form-group">
+          <label for="ex-sku">SKU del Producto</label>
+          <input type="text" id="ex-sku" name="sku" required placeholder="COSM-LIP-RED-001">
+        </div>
+        <button type="submit" class="btn btn-secondary">Verificar</button>
+      </form>
+      <div id="existsResult" class="inventory-result" style="display:none;"></div>
+    </div>
+  </div>
+</section>
+
+<%- include('../layouts/footer') %>

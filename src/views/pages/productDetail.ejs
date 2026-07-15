@@ -1,0 +1,107 @@
+<%- include('../layouts/header') %>
+
+<section class="page-header">
+  <div class="page-header-content">
+    <div>
+      <a href="/products" class="back-link"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Volver al catálogo</a>
+      <h1><%= product.titulo %></h1>
+    </div>
+    <div class="page-header-actions">
+      <a href="/products/<%= product._id %>/edit" class="btn btn-primary"><i data-lucide="pencil" style="width:16px;height:16px"></i> Editar</a>
+    </div>
+  </div>
+</section>
+
+<div class="product-detail">
+  <div class="product-detail-grid">
+    <div class="product-detail-images">
+      <% if (product.imagenes && product.imagenes.length > 0) { %>
+        <div class="main-image">
+          <img src="<%= product.imagenes[0] %>" alt="<%= product.titulo %>" onerror="this.src='/images/placeholder.svg'">
+        </div>
+        <% if (product.imagenes.length > 1) { %>
+          <div class="image-thumbnails">
+            <% product.imagenes.forEach(function(img) { %>
+              <img src="<%= img %>" alt="Thumbnail" class="thumbnail" onclick="changeMainImage(this.src)" onerror="this.style.display='none'">
+            <% }); %>
+          </div>
+        <% } %>
+      <% } else { %>
+        <div class="main-image">
+          <div class="product-image-placeholder large">
+            <i data-lucide="image" style="width:64px;height:64px;opacity:0.3"></i>
+            <p>Sin imagen</p>
+          </div>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="product-detail-info">
+      <div class="detail-header">
+        <span class="product-status status-<%= product.estado.toLowerCase() %>"><%= product.estado %></span>
+        <span class="product-category-badge"><%= product.categoria %></span>
+      </div>
+
+      <h2 class="detail-title"><%= product.titulo %></h2>
+      <p class="detail-brand"><i data-lucide="tag" style="width:14px;height:14px"></i> Marca: <strong><%= product.marca %></strong></p>
+      <p class="detail-sku"><i data-lucide="hash" style="width:14px;height:14px"></i> SKU: <code><%= product.sku %></code></p>
+
+      <div class="detail-price">$<%= product.precio.toFixed(2) %></div>
+
+      <div class="detail-stock">
+        <span class="stock-label"><i data-lucide="box" style="width:14px;height:14px"></i> Stock disponible:</span>
+        <span class="stock-value <%= product.stockDisponible === 0 ? 'stock-empty' : '' %>">
+          <%= product.stockDisponible %> unidades
+        </span>
+      </div>
+
+      <div class="detail-description">
+        <h3>Descripción</h3>
+        <p><%= product.descripcion %></p>
+      </div>
+
+      <% if (product.tipoPielRecomendado && product.tipoPielRecomendado.length > 0) { %>
+        <div class="detail-section">
+          <h3>Tipo de Piel Recomendado</h3>
+          <div class="tags">
+            <% product.tipoPielRecomendado.forEach(function(tipo) { %>
+              <span class="tag"><%= tipo %></span>
+            <% }); %>
+          </div>
+        </div>
+      <% } %>
+
+      <% if (product.tono) { %>
+        <div class="detail-section">
+          <h3>Tono</h3>
+          <p><%= product.tono %></p>
+        </div>
+      <% } %>
+
+      <% if (product.peso) { %>
+        <div class="detail-section">
+          <h3>Peso</h3>
+          <p><%= product.peso %></p>
+        </div>
+      <% } %>
+
+      <% if (product.ingredientes && product.ingredientes.length > 0) { %>
+        <div class="detail-section">
+          <h3>Ingredientes</h3>
+          <ul class="ingredients-list">
+            <% product.ingredientes.forEach(function(ing) { %>
+              <li><%= ing %></li>
+            <% }); %>
+          </ul>
+        </div>
+      <% } %>
+
+      <div class="detail-meta">
+        <p><i data-lucide="calendar" style="width:12px;height:12px"></i> Creado: <%= new Date(product.fechaCreacion).toLocaleDateString('es-MX') %></p>
+        <p><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Actualizado: <%= new Date(product.fechaActualizacion).toLocaleDateString('es-MX') %></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

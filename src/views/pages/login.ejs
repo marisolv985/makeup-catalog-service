@@ -1,0 +1,46 @@
+<%- include('../layouts/header') %>
+
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <i data-lucide="sparkles" class="auth-icon"></i>
+      <h1>GlowFlow</h1>
+      <p>Inicia sesión en tu cuenta</p>
+    </div>
+
+    <% if (typeof errorMessage !== 'undefined' && errorMessage) { %>
+      <div class="alert alert-error">
+        <i data-lucide="alert-circle" class="alert-icon"></i>
+        <%= errorMessage %>
+      </div>
+    <% } %>
+
+    <form action="/login" method="POST" class="auth-form">
+      <div class="form-group">
+        <label for="username">Usuario o Email</label>
+        <div class="input-icon-wrap">
+          <i data-lucide="user" class="input-icon"></i>
+          <input type="text" id="username" name="username" placeholder="Tu usuario o email" required autocomplete="username">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <div class="input-icon-wrap">
+          <i data-lucide="lock" class="input-icon"></i>
+          <input type="password" id="password" name="password" placeholder="Tu contraseña" required autocomplete="current-password">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">
+        <i data-lucide="log-in" style="width:16px;height:16px"></i> Iniciar Sesión
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>¿No tienes cuenta? <a href="/register">Regístrate aquí</a></p>
+    </div>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

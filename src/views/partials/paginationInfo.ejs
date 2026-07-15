@@ -1,0 +1,7 @@
+<% if (typeof pagination !== 'undefined' && pagination) { %>
+  <div class="pagination-info">
+    Mostrando <%= ((pagination.page - 1) * pagination.limit) + 1 %> -
+    <%= Math.min(pagination.page * pagination.limit, pagination.total) %> de
+    <%= pagination.total %> resultados
+  </div>
+<% } %>
