@@ -159,7 +159,7 @@
               <form action="/cart/add" method="POST" style="display:inline;">
                 <input type="hidden" name="productoSku" value="<%= product.sku %>">
                 <input type="hidden" name="cantidad" value="1">
-                <button type="submit" class="btn btn-sm btn-primary" title="Agregar al carrito"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i> Comprar</button>
+                <button type="submit" class="btn btn-sm btn-primary" title="Agregar al carrito"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i> Agregar al carrito</button>
               </form>
             <% } else if (!isLogged && product.estado === 'DISPONIBLE') { %>
               <a href="/login" class="btn btn-sm btn-outline" title="Inicia sesión para comprar"><i data-lucide="log-in" style="width:14px;height:14px"></i></a>
