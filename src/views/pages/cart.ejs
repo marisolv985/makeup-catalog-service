@@ -40,12 +40,27 @@
             <p class="cart-item-price">$<%= Number(item.precioUnitario).toFixed(2) %> c/u</p>
           </div>
           <div class="cart-item-actions">
-            <form action="/cart/update" method="POST" class="cart-qty-form">
-              <input type="hidden" name="sku" value="<%= item.productoSku %>">
-              <button type="submit" name="cantidad" value="<%= Math.max(1, item.cantidad - 1) %>" class="qty-btn"><i data-lucide="minus" style="width:14px;height:14px"></i></button>
-              <span class="qty-value"><%= item.cantidad %></span>
-              <button type="submit" name="cantidad" value="<%= item.cantidad + 1 %>" class="qty-btn"><i data-lucide="plus" style="width:14px;height:14px"></i></button>
-            </form>
+            <% if (item.cantidad > 1) { %>
+              <form action="/cart/update" method="POST" class="cart-qty-form">
+                <input type="hidden" name="sku" value="<%= item.productoSku %>">
+                <button type="submit" name="cantidad" value="<%= item.cantidad - 1 %>" class="qty-btn"><i data-lucide="minus" style="width:14px;height:14px"></i></button>
+                <span class="qty-value"><%= item.cantidad %></span>
+                <button type="submit" name="cantidad" value="<%= item.cantidad + 1 %>" class="qty-btn"><i data-lucide="plus" style="width:14px;height:14px"></i></button>
+              </form>
+            <% } else { %>
+              <div class="cart-qty-form">
+                <form action="/cart/remove" method="POST" style="display:inline">
+                  <input type="hidden" name="sku" value="<%= item.productoSku %>">
+                  <button type="submit" class="qty-btn qty-btn-remove" title="Eliminar producto"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+                </form>
+                <span class="qty-value"><%= item.cantidad %></span>
+                <form action="/cart/update" method="POST" style="display:inline">
+                  <input type="hidden" name="sku" value="<%= item.productoSku %>">
+                  <input type="hidden" name="cantidad" value="2">
+                  <button type="submit" class="qty-btn"><i data-lucide="plus" style="width:14px;height:14px"></i></button>
+                </form>
+              </div>
+            <% } %>
             <p class="cart-item-subtotal">$<%= (Number(item.precioUnitario) * item.cantidad).toFixed(2) %></p>
             <form action="/cart/remove" method="POST">
               <input type="hidden" name="sku" value="<%= item.productoSku %>">
