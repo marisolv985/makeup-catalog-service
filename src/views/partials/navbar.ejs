@@ -13,14 +13,19 @@
     <div class="navbar-links">
       <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>"><i data-lucide="layout-dashboard"></i> Dashboard</a>
       <a href="/products" class="<%= currentPath.startsWith('/products') ? 'active' : '' %>"><i data-lucide="package"></i> Productos</a>
-      <a href="/inventory" class="<%= currentPath === '/inventory' ? 'active' : '' %>"><i data-lucide="warehouse"></i> Inventario</a>
-      <a href="/api-docs" target="_blank"><i data-lucide="file-text"></i> API Docs</a>
+      <% if (typeof user !== 'undefined' && user && user.rol === 'ADMIN') { %>
+        <a href="/inventory" class="<%= currentPath === '/inventory' ? 'active' : '' %>"><i data-lucide="warehouse"></i> Inventario</a>
+        <a href="/admin/users" class="<%= currentPath === '/admin/users' ? 'active' : '' %>"><i data-lucide="users"></i> Usuarios</a>
+      <% } %>
+      <button class="btn-icon" id="darkToggle" onclick="document.body.classList.toggle('dark');localStorage.setItem('gf_darkMode',document.body.classList.contains('dark'))">
+        <i data-lucide="moon" id="darkIcon"></i>
+      </button>
       <% if (typeof user !== 'undefined' && user) { %>
         <span class="navbar-user">
           <i data-lucide="user" class="user-icon"></i>
           <%= user.username %>
         </span>
-        <a href="/logout" class="navbar-logout"><i data-lucide="log-out"></i> Salir</a>
+        <a href="#" class="navbar-logout" onclick="if(confirm('¿Cerrar sesión?'))window.location.href='/logout'"><i data-lucide="log-out"></i> Salir</a>
       <% } else { %>
         <a href="/login" class="<%= currentPath === '/login' ? 'active' : '' %>"><i data-lucide="log-in"></i> Sesión</a>
       <% } %>

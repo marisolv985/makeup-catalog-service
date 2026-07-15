@@ -1,0 +1,45 @@
+<%- include('../layouts/header') %>
+
+<section class="page-header">
+  <div class="page-header-content">
+    <h1>Gestión de Usuarios</h1>
+  </div>
+</section>
+
+<section class="inventory-section">
+  <div class="inventory-actions">
+    <% if (users && users.length > 0) { %>
+      <% users.forEach(function(u) { %>
+        <div class="inventory-card">
+          <h3><i data-lucide="user" style="width:18px;height:18px"></i> <%= u.username %></h3>
+          <p><%= u.email %></p>
+          <p class="text-muted"><%= u.nombre || 'Sin nombre' %></p>
+          <div style="margin: 0.8rem 0;">
+            <span class="product-status status-<%= u.rol === 'ADMIN' ? 'disponible' : u.rol === 'EDITOR' ? 'agotado' : 'inactivo' %>"><%= u.rol %></span>
+            <% if (!u.activo) { %>
+              <span class="product-status status-inactivo">INACTIVO</span>
+            <% } %>
+          </div>
+          <p class="text-muted" style="font-size:0.8rem">Registrado: <%= new Date(u.fechaCreacion).toLocaleDateString('es-MX') %></p>
+          <form method="POST" action="/admin/users/<%= u._id %>/role" style="margin-top:0.8rem">
+            <div class="form-group" style="margin-bottom:0.5rem">
+              <select name="rol" style="width:100%;padding:0.4rem;border:1px solid var(--border);border-radius:var(--radius)">
+                <% ['ADMIN', 'EDITOR', 'VIEWER'].forEach(function(r) { %>
+                  <option value="<%= r %>" <%= u.rol === r ? 'selected' : '' %>><%= r %></option>
+                <% }); %>
+              </select>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary"><i data-lucide="save" style="width:14px;height:14px"></i> Actualizar rol</button>
+          </form>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="empty-state">
+        <i data-lucide="users" class="empty-icon"></i>
+        <h3>No hay usuarios registrados</h3>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../layouts/footer') %>

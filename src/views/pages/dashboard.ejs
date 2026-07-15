@@ -1,10 +1,13 @@
 <%- include('../layouts/header') %>
 
+<% const isAdmin = typeof user !== 'undefined' && user && user.rol === 'ADMIN'; %>
+
 <section class="page-header">
-  <h1>Dashboard</h1>
-  <p class="subtitle">Resumen del catálogo de productos cosméticos</p>
+  <h1><%= isAdmin ? 'Dashboard' : 'Bienvenido a GlowFlow' %></h1>
+  <p class="subtitle"><%= isAdmin ? 'Resumen del catálogo de productos cosméticos' : 'Explora nuestro catálogo de productos de maquillaje' %></p>
 </section>
 
+<% if (isAdmin) { %>
 <section class="stats-grid">
   <div class="stat-card">
     <div class="stat-icon" style="background: var(--primary-light); color: var(--primary);">
@@ -46,12 +49,14 @@
     </div>
   </div>
 </section>
+<% } %>
 
 <section class="dashboard-section">
   <div class="section-header">
-    <h2>Acciones Rápidas</h2>
+    <h2><%= isAdmin ? 'Acciones Rápidas' : 'Explorar Catálogo' %></h2>
   </div>
   <div class="actions-grid">
+    <% if (isAdmin) { %>
     <a href="/products/new" class="action-card">
       <div class="action-icon-wrap" style="background: var(--primary-light); color: var(--primary);">
         <i data-lucide="plus"></i>
@@ -59,6 +64,7 @@
       <span class="action-title">Nuevo Producto</span>
       <span class="action-desc">Agregar un producto al catálogo</span>
     </a>
+    <% } %>
     <a href="/products" class="action-card">
       <div class="action-icon-wrap" style="background: #e8f4fd; color: #0d6efd;">
         <i data-lucide="eye"></i>
@@ -66,6 +72,7 @@
       <span class="action-title">Ver Catálogo</span>
       <span class="action-desc">Explorar todos los productos</span>
     </a>
+    <% if (isAdmin) { %>
     <a href="/inventory" class="action-card">
       <div class="action-icon-wrap" style="background: #d1ecf1; color: #0c8599;">
         <i data-lucide="bar-chart-3"></i>
@@ -80,6 +87,7 @@
       <span class="action-title">Documentación API</span>
       <span class="action-desc">Explorar endpoints disponibles</span>
     </a>
+    <% } %>
   </div>
 </section>
 

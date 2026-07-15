@@ -1,14 +1,18 @@
 <%- include('../layouts/header') %>
 
+<% const isAdmin = typeof user !== 'undefined' && user && user.rol === 'ADMIN'; %>
+
 <section class="page-header">
   <div class="page-header-content">
     <div>
       <a href="/products" class="back-link"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Volver al catálogo</a>
       <h1><%= product.titulo %></h1>
     </div>
+    <% if (isAdmin) { %>
     <div class="page-header-actions">
       <a href="/products/<%= product._id %>/edit" class="btn btn-primary"><i data-lucide="pencil" style="width:16px;height:16px"></i> Editar</a>
     </div>
+    <% } %>
   </div>
 </section>
 
@@ -16,7 +20,7 @@
   <div class="product-detail-grid">
     <div class="product-detail-images">
       <% if (product.imagenes && product.imagenes.length > 0) { %>
-        <div class="main-image">
+        <div class="main-image" onclick="openLightbox(this.querySelector('img').src)" style="cursor:zoom-in">
           <img src="<%= product.imagenes[0] %>" alt="<%= product.titulo %>" onerror="this.src='/images/placeholder.svg'">
         </div>
         <% if (product.imagenes.length > 1) { %>
@@ -103,5 +107,23 @@
     </div>
   </div>
 </div>
+
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()"><i data-lucide="x" style="width:24px;height:24px"></i></button>
+  <img id="lightboxImg" src="" alt="Vista ampliada">
+</div>
+
+<script>
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+</script>
 
 <%- include('../layouts/footer') %>
