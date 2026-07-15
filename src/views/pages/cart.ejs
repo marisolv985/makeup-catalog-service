@@ -28,9 +28,15 @@
     <div class="cart-items">
       <% cart.items.forEach(function(item) { %>
         <div class="cart-item">
+          <div class="cart-item-image">
+            <% if (item.imagenUrl) { %>
+              <img src="<%= item.imagenUrl %>" alt="<%= item.nombreProducto %>" onerror="this.src='/images/placeholder.svg'">
+            <% } else { %>
+              <div class="product-image-placeholder"><i data-lucide="image" style="width:32px;height:32px;opacity:0.3"></i></div>
+            <% } %>
+          </div>
           <div class="cart-item-info">
             <h3><%= item.nombreProducto %></h3>
-            <p class="cart-item-sku"><i data-lucide="hash" style="width:12px;height:12px"></i> <%= item.productoSku %></p>
             <p class="cart-item-price">$<%= Number(item.precioUnitario).toFixed(2) %> c/u</p>
           </div>
           <div class="cart-item-actions">

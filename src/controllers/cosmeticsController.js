@@ -96,6 +96,9 @@ class CosmeticsController {
       res.status(200).json({
         sku: result.sku,
         stockDisponible: result.stockDisponible,
+        titulo: result.titulo,
+        precio: result.precio,
+        imagenUrl: result.imagenUrl,
       });
     } catch (error) {
       if (error.statusCode === 404) {

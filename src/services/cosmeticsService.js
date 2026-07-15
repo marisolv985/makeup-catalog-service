@@ -88,7 +88,7 @@ class CosmeticsService {
     if (!result) {
       throw ApiError.notFound(`Producto con SKU ${sku} no encontrado`);
     }
-    return { sku: result.sku, stockDisponible: result.stockDisponible };
+    return { sku: result.sku, stockDisponible: result.stockDisponible, titulo: result.titulo, precio: result.precio, imagenUrl: result.imagenes && result.imagenes.length > 0 ? result.imagenes[0] : null };
   }
 
   async exists(sku) {

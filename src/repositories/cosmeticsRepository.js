@@ -71,7 +71,7 @@ class CosmeticsRepository {
   }
 
   async getStock(sku) {
-    const product = await Product.findOne({ sku: sku.toUpperCase() }).select('sku stockDisponible');
+    const product = await Product.findOne({ sku: sku.toUpperCase() }).select('sku stockDisponible titulo precio imagenes');
     return product;
   }
 }
