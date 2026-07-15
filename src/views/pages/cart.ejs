@@ -1,0 +1,81 @@
+<%- include('../layouts/header') %>
+
+<section class="page-header">
+  <div class="page-header-content">
+    <div>
+      <a href="/products" class="back-link"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Seguir comprando</a>
+      <h1><i data-lucide="shopping-cart" style="width:28px;height:28px"></i> Mi Carrito</h1>
+    </div>
+  </div>
+</section>
+
+<% if (successMessage) { %>
+  <div class="alert alert-success"><i data-lucide="check-circle" style="width:18px;height:18px"></i> <%= successMessage %></div>
+<% } %>
+<% if (errorMessage) { %>
+  <div class="alert alert-danger"><i data-lucide="alert-circle" style="width:18px;height:18px"></i> <%= errorMessage %></div>
+<% } %>
+
+<% if (!cart || !cart.items || cart.items.length === 0) { %>
+  <div class="empty-state">
+    <i data-lucide="shopping-cart" style="width:64px;height:64px;opacity:0.3"></i>
+    <h2>Tu carrito está vacío</h2>
+    <p>Agrega productos del catálogo para comenzar tu compra</p>
+    <a href="/products" class="btn btn-primary"><i data-lucide="package" style="width:16px;height:16px"></i> Ver Catálogo</a>
+  </div>
+<% } else { %>
+  <div class="cart-container">
+    <div class="cart-items">
+      <% cart.items.forEach(function(item) { %>
+        <div class="cart-item">
+          <div class="cart-item-info">
+            <h3><%= item.nombreProducto %></h3>
+            <p class="cart-item-sku"><i data-lucide="hash" style="width:12px;height:12px"></i> <%= item.productoSku %></p>
+            <p class="cart-item-price">$<%= Number(item.precioUnitario).toFixed(2) %> c/u</p>
+          </div>
+          <div class="cart-item-actions">
+            <form action="/cart/update" method="POST" class="cart-qty-form">
+              <input type="hidden" name="sku" value="<%= item.productoSku %>">
+              <button type="submit" name="cantidad" value="<%= Math.max(1, item.cantidad - 1) %>" class="qty-btn"><i data-lucide="minus" style="width:14px;height:14px"></i></button>
+              <span class="qty-value"><%= item.cantidad %></span>
+              <button type="submit" name="cantidad" value="<%= item.cantidad + 1 %>" class="qty-btn"><i data-lucide="plus" style="width:14px;height:14px"></i></button>
+            </form>
+            <p class="cart-item-subtotal">$<%= (Number(item.precioUnitario) * item.cantidad).toFixed(2) %></p>
+            <form action="/cart/remove" method="POST">
+              <input type="hidden" name="sku" value="<%= item.productoSku %>">
+              <button type="submit" class="btn-icon btn-danger-icon" title="Eliminar"><i data-lucide="trash-2" style="width:16px;height:16px"></i></button>
+            </form>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <div class="cart-summary">
+      <h2><i data-lucide="receipt" style="width:20px;height:20px"></i> Resumen</h2>
+      <div class="cart-summary-row">
+        <span>Productos (<%= cart.items.reduce((a, i) => a + i.cantidad, 0) %>)</span>
+        <span>$<%= (cart.total || cart.items.reduce((a, i) => a + Number(i.precioUnitario) * i.cantidad, 0)).toFixed(2) %></span>
+      </div>
+      <div class="cart-summary-row cart-summary-total">
+        <span>Total</span>
+        <span>$<%= (cart.total || cart.items.reduce((a, i) => a + Number(i.precioUnitario) * i.cantidad, 0)).toFixed(2) %></span>
+      </div>
+
+      <form action="/cart/checkout" method="POST" class="checkout-form">
+        <div class="form-group">
+          <label for="direccionEnvio"><i data-lucide="map-pin" style="width:14px;height:14px"></i> Dirección de envío</label>
+          <textarea id="direccionEnvio" name="direccionEnvio" rows="2" placeholder="Calle, número, colonia, ciudad..."></textarea>
+        </div>
+        <div class="form-group">
+          <label for="notas"><i data-lucide="message-square" style="width:14px;height:14px"></i> Notas (opcional)</label>
+          <textarea id="notas" name="notas" rows="2" placeholder="Instrucciones especiales de entrega..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i data-lucide="credit-card" style="width:16px;height:16px"></i> Confirmar Compra
+        </button>
+      </form>
+    </div>
+  </div>
+<% } %>
+
+<%- include('../layouts/footer') %>

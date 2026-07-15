@@ -1,0 +1,170 @@
+<%- include('../layouts/header') %>
+
+<section class="page-header">
+  <div class="page-header-content">
+    <div>
+      <a href="/orders" class="back-link"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Mis Órdenes</a>
+      <h1><i data-lucide="file-text" style="width:28px;height:28px"></i> Orden #<%= order.id %></h1>
+    </div>
+    <div class="page-header-actions">
+      <span class="order-status status-<%= order.estado.toLowerCase().replace('_', '-') %>">
+        <% if (order.estado === 'PENDIENTE_PAGO') { %><i data-lucide="clock" style="width:14px;height:14px"></i>
+        <% } else if (order.estado === 'PAGADO') { %><i data-lucide="credit-card" style="width:14px;height:14px"></i>
+        <% } else if (order.estado === 'ENVIADO') { %><i data-lucide="truck" style="width:14px;height:14px"></i>
+        <% } else if (order.estado === 'ENTREGADO') { %><i data-lucide="check-circle" style="width:14px;height:14px"></i>
+        <% } else if (order.estado === 'CANCELADO') { %><i data-lucide="x-circle" style="width:14px;height:14px"></i>
+        <% } %>
+        <%= order.estado.replace('_', ' ') %>
+      </span>
+    </div>
+  </div>
+</section>
+
+<% if (successMessage) { %>
+  <div class="alert alert-success"><i data-lucide="check-circle" style="width:18px;height:18px"></i> <%= successMessage %></div>
+<% } %>
+<% if (errorMessage) { %>
+  <div class="alert alert-danger"><i data-lucide="alert-circle" style="width:18px;height:18px"></i> <%= errorMessage %></div>
+<% } %>
+
+<div class="order-detail">
+  <div class="order-detail-grid">
+    <div class="order-detail-items">
+      <h2><i data-lucide="list" style="width:20px;height:20px"></i> Productos</h2>
+      <% if (order.items && order.items.length > 0) { %>
+        <% order.items.forEach(function(item) { %>
+          <div class="order-item">
+            <div class="order-item-info">
+              <p class="order-item-sku"><i data-lucide="hash" style="width:12px;height:12px"></i> <%= item.productoSku %></p>
+              <p class="order-item-qty"><%= item.cantidad %> x $<%= Number(item.precioUnitario).toFixed(2) %></p>
+            </div>
+            <div class="order-item-subtotal">
+              $<%= Number(item.subtotal).toFixed(2) %>
+            </div>
+          </div>
+        <% }); %>
+      <% } %>
+    </div>
+
+    <div class="order-detail-summary">
+      <h2><i data-lucide="receipt" style="width:20px;height:20px"></i> Resumen</h2>
+      <div class="order-summary-row">
+        <span><i data-lucide="calendar" style="width:14px;height:14px"></i> Fecha</span>
+        <span><%= new Date(order.fechaCreacion).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
+      </div>
+      <% if (order.direccionEnvio) { %>
+        <div class="order-summary-row">
+          <span><i data-lucide="map-pin" style="width:14px;height:14px"></i> Dirección</span>
+          <span><%= order.direccionEnvio %></span>
+        </div>
+      <% } %>
+      <% if (order.notas) { %>
+        <div class="order-summary-row">
+          <span><i data-lucide="message-square" style="width:14px;height:14px"></i> Notas</span>
+          <span><%= order.notas %></span>
+        </div>
+      <% } %>
+      <div class="order-summary-row order-summary-total">
+        <span><i data-lucide="dollar-sign" style="width:14px;height:14px"></i> Total</span>
+        <span>$<%= Number(order.totalPagar).toFixed(2) %></span>
+      </div>
+
+      <% if (order.estado === 'PENDIENTE_PAGO') { %>
+        <div class="order-timeline">
+          <h3>Estado del pedido</h3>
+          <div class="timeline">
+            <div class="timeline-step active">
+              <i data-lucide="clock" style="width:16px;height:16px"></i>
+              <span>Pendiente de pago</span>
+            </div>
+            <div class="timeline-step">
+              <i data-lucide="credit-card" style="width:16px;height:16px"></i>
+              <span>Pagado</span>
+            </div>
+            <div class="timeline-step">
+              <i data-lucide="truck" style="width:16px;height:16px"></i>
+              <span>Enviado</span>
+            </div>
+            <div class="timeline-step">
+              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
+              <span>Entregado</span>
+            </div>
+          </div>
+        </div>
+      <% } else if (order.estado === 'PAGADO') { %>
+        <div class="order-timeline">
+          <h3>Estado del pedido</h3>
+          <div class="timeline">
+            <div class="timeline-step completed">
+              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
+              <span>Pendiente de pago</span>
+            </div>
+            <div class="timeline-step active">
+              <i data-lucide="credit-card" style="width:16px;height:16px"></i>
+              <span>Pagado</span>
+            </div>
+            <div class="timeline-step">
+              <i data-lucide="truck" style="width:16px;height:16px"></i>
+              <span>Enviado</span>
+            </div>
+            <div class="timeline-step">
+              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
+              <span>Entregado</span>
+            </div>
+          </div>
+        </div>
+      <% } else if (order.estado === 'ENVIADO') { %>
+        <div class="order-timeline">
+          <h3>Estado del pedido</h3>
+          <div class="timeline">
+            <div class="timeline-step completed">
+              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
+              <span>Pendiente de pago</span>
+            </div>
+            <div class="timeline-step completed">
+              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
+              <span>Pagado</span>
+            </div>
+            <div class="timeline-step active">
+              <i data-lucide="truck" style="width:16px;height:16px"></i>
+              <span>Enviado</span>
+            </div>
+            <div class="timeline-step">
+              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
+              <span>Entregado</span>
+            </div>
+          </div>
+        </div>
+      <% } else if (order.estado === 'ENTREGADO') { %>
+        <div class="order-timeline">
+          <h3>Estado del pedido</h3>
+          <div class="timeline">
+            <div class="timeline-step completed">
+              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
+              <span>Pendiente de pago</span>
+            </div>
+            <div class="timeline-step completed">
+              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
+              <span>Pagado</span>
+            </div>
+            <div class="timeline-step completed">
+              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
+              <span>Enviado</span>
+            </div>
+            <div class="timeline-step active">
+              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
+              <span>Entregado</span>
+            </div>
+          </div>
+        </div>
+      <% } else if (order.estado === 'CANCELADO') { %>
+        <div class="order-cancelled-badge">
+          <i data-lucide="x-circle" style="width:20px;height:20px"></i>
+          <span>Esta orden fue cancelada</span>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<%- include('../layouts/footer') %>

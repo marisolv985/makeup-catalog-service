@@ -14,6 +14,7 @@ const requestLogger = require('./middlewares/requestLogger');
 const handleMulterErrors = require('./middlewares/handleMulterErrors');
 const cosmeticsRoutes = require('./routes/cosmeticsRoutes');
 const viewRoutes = require('./routes/views/viewRoutes');
+const orderViewRoutes = require('./routes/views/orderViewRoutes');
 const authRoutes = require('./routes/authRoutes');
 const { JWT_SECRET, CORS_ORIGIN } = require('./config/constants');
 
@@ -83,6 +84,7 @@ app.get('/health', async (_req, res) => {
 app.use('/api/v1/cosmetics', cosmeticsRoutes);
 
 app.use('/', authRoutes);
+app.use('/', orderViewRoutes);
 app.use('/', viewRoutes);
 
 app.use(handleMulterErrors);

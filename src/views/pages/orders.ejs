@@ -1,0 +1,64 @@
+<%- include('../layouts/header') %>
+
+<section class="page-header">
+  <div class="page-header-content">
+    <div>
+      <a href="/" class="back-link"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Dashboard</a>
+      <h1><i data-lucide="package" style="width:28px;height:28px"></i> Mis Órdenes</h1>
+    </div>
+  </div>
+</section>
+
+<% if (successMessage) { %>
+  <div class="alert alert-success"><i data-lucide="check-circle" style="width:18px;height:18px"></i> <%= successMessage %></div>
+<% } %>
+<% if (errorMessage) { %>
+  <div class="alert alert-danger"><i data-lucide="alert-circle" style="width:18px;height:18px"></i> <%= errorMessage %></div>
+<% } %>
+
+<% if (!orders || orders.length === 0) { %>
+  <div class="empty-state">
+    <i data-lucide="package" style="width:64px;height:64px;opacity:0.3"></i>
+    <h2>No tienes órdenes aún</h2>
+    <p>Explora nuestro catálogo y haz tu primera compra</p>
+    <a href="/products" class="btn btn-primary"><i data-lucide="shopping-bag" style="width:16px;height:16px"></i> Ir al Catálogo</a>
+  </div>
+<% } else { %>
+  <div class="orders-list">
+    <% orders.forEach(function(order) { %>
+      <a href="/orders/<%= order.id %>" class="order-card">
+        <div class="order-card-header">
+          <span class="order-id">#<%= order.id %></span>
+          <span class="order-status status-<%= order.estado.toLowerCase().replace('_', '-') %>">
+            <% if (order.estado === 'PENDIENTE_PAGO') { %><i data-lucide="clock" style="width:14px;height:14px"></i>
+            <% } else if (order.estado === 'PAGADO') { %><i data-lucide="credit-card" style="width:14px;height:14px"></i>
+            <% } else if (order.estado === 'ENVIADO') { %><i data-lucide="truck" style="width:14px;height:14px"></i>
+            <% } else if (order.estado === 'ENTREGADO') { %><i data-lucide="check-circle" style="width:14px;height:14px"></i>
+            <% } else if (order.estado === 'CANCELADO') { %><i data-lucide="x-circle" style="width:14px;height:14px"></i>
+            <% } %>
+            <%= order.estado.replace('_', ' ') %>
+          </span>
+        </div>
+        <div class="order-card-body">
+          <div class="order-card-info">
+            <p><i data-lucide="calendar" style="width:12px;height:12px"></i> <%= new Date(order.fechaCreacion).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+            <p><i data-lucide="shopping-bag" style="width:12px;height:12px"></i> <%= order.items ? order.items.length : 0 %> producto(s)</p>
+          </div>
+          <div class="order-card-total">
+            <span>$<%= Number(order.totalPagar).toFixed(2) %></span>
+          </div>
+        </div>
+      </a>
+    <% }); %>
+  </div>
+
+  <% if (pagination.totalPages > 1) { %>
+    <div class="pagination">
+      <% for (let p = 1; p <= pagination.totalPages; p++) { %>
+        <a href="/orders?page=<%= p %>" class="page-link <%= p === pagination.page ? 'active' : '' %>"><%= p %></a>
+      <% } %>
+    </div>
+  <% } %>
+<% } %>
+
+<%- include('../layouts/footer') %>

@@ -64,6 +64,7 @@ services:
       NODE_ENV: production
       CONSUL_URL: http://consul:8500
       SERVICE_NAME: makeup-catalog-service
+      ORDERS_SERVICE_URL: http://orders-service:3002
     depends_on:
       mongodb:
         condition: service_healthy

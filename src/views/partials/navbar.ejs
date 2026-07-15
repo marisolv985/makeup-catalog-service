@@ -13,6 +13,10 @@
     <div class="navbar-links">
       <a href="/" class="<%= currentPath === '/' ? 'active' : '' %>"><i data-lucide="layout-dashboard"></i> Dashboard</a>
       <a href="/products" class="<%= currentPath.startsWith('/products') ? 'active' : '' %>"><i data-lucide="package"></i> Productos</a>
+      <% if (typeof user !== 'undefined' && user) { %>
+        <a href="/cart" class="<%= currentPath === '/cart' ? 'active' : '' %>"><i data-lucide="shopping-cart"></i> Carrito</a>
+        <a href="/orders" class="<%= currentPath.startsWith('/orders') ? 'active' : '' %>"><i data-lucide="package"></i> Órdenes</a>
+      <% } %>
       <% if (typeof user !== 'undefined' && user && user.rol === 'ADMIN') { %>
         <a href="/inventory" class="<%= currentPath === '/inventory' ? 'active' : '' %>"><i data-lucide="warehouse"></i> Inventario</a>
         <a href="/admin/users" class="<%= currentPath === '/admin/users' ? 'active' : '' %>"><i data-lucide="users"></i> Usuarios</a>

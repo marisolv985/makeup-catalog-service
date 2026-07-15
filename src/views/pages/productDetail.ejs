@@ -1,6 +1,7 @@
 <%- include('../layouts/header') %>
 
 <% const isAdmin = typeof user !== 'undefined' && user && user.rol === 'ADMIN'; %>
+<% const isLogged = typeof user !== 'undefined' && user; %>
 
 <section class="page-header">
   <div class="page-header-content">
@@ -51,6 +52,23 @@
       <p class="detail-sku"><i data-lucide="hash" style="width:14px;height:14px"></i> SKU: <code><%= product.sku %></code></p>
 
       <div class="detail-price">$<%= product.precio.toFixed(2) %></div>
+
+      <% if (isLogged && product.estado === 'DISPONIBLE' && product.stockDisponible > 0) { %>
+        <form action="/cart/add" method="POST" class="add-to-cart-form">
+          <input type="hidden" name="productoSku" value="<%= product.sku %>">
+          <div class="qty-selector">
+            <label><i data-lucide="shopping-bag" style="width:14px;height:14px"></i> Cantidad:</label>
+            <input type="number" name="cantidad" value="1" min="1" max="<%= product.stockDisponible %>" class="qty-input">
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">
+            <i data-lucide="cart-plus" style="width:16px;height:16px"></i> Agregar al Carrito
+          </button>
+        </form>
+      <% } else if (!isLogged && product.estado === 'DISPONIBLE') { %>
+        <a href="/login" class="btn btn-outline btn-full">
+          <i data-lucide="log-in" style="width:16px;height:16px"></i> Inicia sesión para comprar
+        </a>
+      <% } %>
 
       <div class="detail-stock">
         <span class="stock-label"><i data-lucide="box" style="width:14px;height:14px"></i> Stock disponible:</span>
