@@ -1,6 +1,7 @@
 <%- include('../layouts/header') %>
 
 <% const isAdmin = typeof user !== 'undefined' && user && user.rol === 'ADMIN'; %>
+<% const isLogged = typeof user !== 'undefined' && user; %>
 
 <section class="page-header">
   <div class="page-header-content">
@@ -154,6 +155,15 @@
 
           <div class="product-actions">
             <a href="/products/<%= product._id %>" class="btn btn-sm btn-outline"><i data-lucide="eye" style="width:14px;height:14px"></i> Ver</a>
+            <% if (isLogged && !isAdmin && product.estado === 'DISPONIBLE' && product.stockDisponible > 0) { %>
+              <form action="/cart/add" method="POST" style="display:inline;">
+                <input type="hidden" name="productoSku" value="<%= product.sku %>">
+                <input type="hidden" name="cantidad" value="1">
+                <button type="submit" class="btn btn-sm btn-primary" title="Agregar al carrito"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i> Comprar</button>
+              </form>
+            <% } else if (!isLogged && product.estado === 'DISPONIBLE') { %>
+              <a href="/login" class="btn btn-sm btn-outline" title="Inicia sesión para comprar"><i data-lucide="log-in" style="width:14px;height:14px"></i></a>
+            <% } %>
             <% if (isAdmin) { %>
               <a href="/products/<%= product._id %>/edit" class="btn btn-sm btn-secondary"><i data-lucide="pencil" style="width:14px;height:14px"></i> Editar</a>
               <button class="btn btn-sm btn-danger" onclick="confirmDelete('<%= product._id %>', '<%= product.titulo %>')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
