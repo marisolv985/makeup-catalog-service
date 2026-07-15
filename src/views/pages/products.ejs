@@ -155,7 +155,7 @@
 
           <div class="product-actions">
             <a href="/products/<%= product._id %>" class="btn btn-sm btn-outline"><i data-lucide="eye" style="width:14px;height:14px"></i> Ver</a>
-            <% if (isLogged && !isAdmin && product.estado === 'DISPONIBLE' && product.stockDisponible > 0) { %>
+            <% if (isLogged && product.estado === 'DISPONIBLE' && product.stockDisponible > 0) { %>
               <form action="/cart/add" method="POST" style="display:inline;">
                 <input type="hidden" name="productoSku" value="<%= product.sku %>">
                 <input type="hidden" name="cantidad" value="1">
