@@ -555,9 +555,9 @@ a:hover {
 }
 
 .category-icon {
-  font-size: 1.8rem;
   margin-bottom: 0.5rem;
   display: block;
+  color: var(--primary);
 }
 
 .category-name {
