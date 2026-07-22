@@ -24,11 +24,16 @@ router.get('/', async (req, res) => {
       { $limit: 8 },
     ]);
 
+    const featured = await Product.find({ estado: 'DISPONIBLE', stockDisponible: { $gt: 0 } })
+      .sort({ fechaCreacion: -1 })
+      .limit(8);
+
     res.render('pages/dashboard', {
       title: 'Dashboard',
       currentPath: '/',
       stats,
       categories,
+      featured,
       successMessage: req.query.success || null,
       errorMessage: req.query.error || null,
     });
@@ -38,6 +43,7 @@ router.get('/', async (req, res) => {
       currentPath: '/',
       stats: { totalProducts: 0, availableProducts: 0, outOfStockProducts: 0, inactiveProducts: 0 },
       categories: [],
+      featured: [],
       errorMessage: 'Error al cargar el dashboard',
     });
   }
@@ -114,6 +120,7 @@ router.get('/products', async (req, res) => {
       sortBy,
       sortOrder,
       buildPaginationQuery: buildQuery,
+      breadcrumbs: [{ label: 'Inicio', href: '/' }, { label: 'Productos' }],
       successMessage: req.query.success || null,
       errorMessage: req.query.error || null,
     });
@@ -125,6 +132,7 @@ router.get('/products', async (req, res) => {
       pagination: { total: 0, page: 1, limit: 12, totalPages: 0 },
       filters: {},
       buildPaginationQuery: function () { return ''; },
+      breadcrumbs: [{ label: 'Inicio', href: '/' }, { label: 'Productos' }],
       errorMessage: 'Error al cargar los productos',
     });
   }
@@ -136,6 +144,7 @@ router.get('/products/new', requireAdmin, (req, res) => {
     currentPath: '/products',
     product: {},
     isEditing: false,
+    breadcrumbs: [{ label: 'Inicio', href: '/' }, { label: 'Productos', href: '/products' }, { label: 'Nuevo Producto' }],
     successMessage: null,
     errorMessage: null,
   });
@@ -151,6 +160,7 @@ router.get('/products/:id', async (req, res) => {
       title: product.titulo,
       currentPath: '/products',
       product,
+      breadcrumbs: [{ label: 'Inicio', href: '/' }, { label: 'Productos', href: '/products' }, { label: product.titulo }],
       successMessage: req.query.success || null,
       errorMessage: req.query.error || null,
     });
@@ -170,6 +180,7 @@ router.get('/products/:id/edit', requireAdmin, async (req, res) => {
       currentPath: '/products',
       product,
       isEditing: true,
+      breadcrumbs: [{ label: 'Inicio', href: '/' }, { label: 'Productos', href: '/products' }, { label: 'Editar ' + product.titulo }],
       successMessage: null,
       errorMessage: null,
     });
