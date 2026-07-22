@@ -1,4 +1,5 @@
 <%- include('../layouts/header') %>
+<%- include('../partials/breadcrumb') %>
 
 <% const isAdmin = typeof user !== 'undefined' && user && user.rol === 'ADMIN'; %>
 <% const isLogged = typeof user !== 'undefined' && user; %>

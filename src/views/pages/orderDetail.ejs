@@ -1,22 +1,26 @@
 <%- include('../layouts/header') %>
 
+<% var estados = ['PENDIENTE_PAGO', 'PAGADO', 'ENVIADO', 'ENTREGADO']; %>
+<% var estadoIdx = order.estado === 'CANCELADO' ? -1 : estados.indexOf(order.estado); %>
+
+<% var estadoInfo = {
+  'PENDIENTE_PAGO': { icon: 'clock', label: 'Pendiente de Pago', color: 'var(--warning)' },
+  'PAGADO': { icon: 'credit-card', label: 'Pagado', color: 'var(--info)' },
+  'ENVIADO': { icon: 'truck', label: 'Enviado', color: 'var(--primary)' },
+  'ENTREGADO': { icon: 'check-circle', label: 'Entregado', color: 'var(--success)' },
+  'CANCELADO': { icon: 'x-circle', label: 'Cancelado', color: 'var(--danger)' }
+}; %>
+<% var ei = estadoInfo[order.estado] || estadoInfo['PENDIENTE_PAGO']; %>
+
 <section class="page-header">
   <div class="page-header-content">
     <div>
       <a href="/orders" class="back-link"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Mis Órdenes</a>
-      <h1><i data-lucide="file-text" style="width:28px;height:28px"></i> Orden #<%= order.id %></h1>
+      <h1>Orden #<%= order.id %></h1>
     </div>
-    <div class="page-header-actions">
-      <span class="order-status status-<%= order.estado.toLowerCase().replace('_', '-') %>">
-        <% if (order.estado === 'PENDIENTE_PAGO') { %><i data-lucide="clock" style="width:14px;height:14px"></i>
-        <% } else if (order.estado === 'PAGADO') { %><i data-lucide="credit-card" style="width:14px;height:14px"></i>
-        <% } else if (order.estado === 'ENVIADO') { %><i data-lucide="truck" style="width:14px;height:14px"></i>
-        <% } else if (order.estado === 'ENTREGADO') { %><i data-lucide="check-circle" style="width:14px;height:14px"></i>
-        <% } else if (order.estado === 'CANCELADO') { %><i data-lucide="x-circle" style="width:14px;height:14px"></i>
-        <% } %>
-        <%= order.estado.replace('_', ' ') %>
-      </span>
-    </div>
+    <span class="order-status" style="background:<%= ei.color %>15;color:<%= ei.color %>;border:1px solid <%= ei.color %>30">
+      <i data-lucide="<%= ei.icon %>" style="width:16px;height:16px"></i> <%= ei.label %>
+    </span>
   </div>
 </section>
 
@@ -27,143 +31,110 @@
   <div class="alert alert-danger"><i data-lucide="alert-circle" style="width:18px;height:18px"></i> <%= errorMessage %></div>
 <% } %>
 
-<div class="order-detail">
-  <div class="order-detail-grid">
-    <div class="order-detail-items">
-      <h2><i data-lucide="list" style="width:20px;height:20px"></i> Productos</h2>
+<% if (order.estado === 'PAGADO' || order.estado === 'ENVIADO' || order.estado === 'ENTREGADO') { %>
+<div class="guia-card">
+  <div class="guia-card-header">
+    <i data-lucide="package-check" style="width:24px;height:24px;color:var(--success)"></i>
+    <div>
+      <h3>Pago Exitoso</h3>
+      <p>Tu pedido ha sido confirmado</p>
+    </div>
+  </div>
+  <div class="guia-card-body">
+    <div class="guia-number">
+      <span>Guía de seguimiento</span>
+      <strong><%= order.numeroGuia || 'GF-' + order.id %></strong>
+      <button class="btn btn-xs" onclick="navigator.clipboard.writeText('<%= order.numeroGuia || 'GF-' + order.id %>');this.textContent='Copiado!';setTimeout(()=>this.textContent='Copiar',2000)">Copiar</button>
+    </div>
+    <% if (order.metodoPago) { %>
+      <div class="guia-meta">
+        <i data-lucide="<%= order.metodoPago.includes('tarjeta') ? 'credit-card' : order.metodoPago === 'transferencia' ? 'banknote' : order.metodoPago === 'contraentrega' ? 'wallet' : 'credit-card' %>" style="width:16px;height:16px"></i>
+        <span><%= order.metodoPago === 'tarjeta_credito' ? 'Tarjeta de Crédito' : order.metodoPago === 'tarjeta_debito' ? 'Tarjeta de Débito' : order.metodoPago === 'transferencia' ? 'Transferencia' : order.metodoPago === 'contraentrega' ? 'Contra Entrega' : order.metodoPago %></span>
+      </div>
+    <% } %>
+  </div>
+</div>
+<% } %>
+
+<div class="order-detail-grid">
+  <div class="order-detail-main">
+    <div class="order-section">
+      <h2><i data-lucide="package" style="width:20px;height:20px"></i> Productos</h2>
       <% if (order.items && order.items.length > 0) { %>
         <% order.items.forEach(function(item) { %>
           <div class="order-item">
             <div class="order-item-info">
-              <p class="order-item-sku"><i data-lucide="hash" style="width:12px;height:12px"></i> <%= item.productoSku %></p>
-              <p class="order-item-qty"><%= item.cantidad %> x $<%= Number(item.precioUnitario).toFixed(2) %></p>
+              <span class="order-item-sku">SKU: <%= item.productoSku %></span>
+              <span class="order-item-qty"><%= item.cantidad %> x $<%= Number(item.precioUnitario).toFixed(2) %></span>
             </div>
-            <div class="order-item-subtotal">
-              $<%= Number(item.subtotal).toFixed(2) %>
-            </div>
+            <div class="order-item-subtotal">$<%= Number(item.subtotal).toFixed(2) %></div>
           </div>
         <% }); %>
       <% } %>
     </div>
 
-    <div class="order-detail-summary">
-      <h2><i data-lucide="receipt" style="width:20px;height:20px"></i> Resumen</h2>
-      <div class="order-summary-row">
-        <span><i data-lucide="calendar" style="width:14px;height:14px"></i> Fecha</span>
-        <span><%= new Date(order.fechaCreacion).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
-      </div>
-      <% if (order.direccionEnvio) { %>
-        <div class="order-summary-row">
-          <span><i data-lucide="map-pin" style="width:14px;height:14px"></i> Dirección</span>
-          <span><%= order.direccionEnvio %></span>
+    <div class="order-section">
+      <h2><i data-lucide="truck" style="width:20px;height:20px"></i> Seguimiento del Pedido</h2>
+      <% if (order.estado !== 'CANCELADO') { %>
+        <div class="tracking-timeline">
+          <% estados.forEach(function(est, idx) {
+            var stepIcon = 'circle';
+            var stepClass = 'pending';
+            if (idx < estadoIdx) { stepClass = 'completed'; stepIcon = 'check-circle'; }
+            else if (idx === estadoIdx) { stepClass = 'active'; stepIcon = 'loader'; }
+          %>
+            <div class="tracking-step <%= stepClass %>">
+              <div class="tracking-dot">
+                <i data-lucide="<%= stepIcon %>" style="width:16px;height:16px"></i>
+              </div>
+              <div class="tracking-info">
+                <strong><%= ['Pago Pendiente', 'Pago Confirmado', 'En Camino', 'Entregado'][idx] %></strong>
+                <span>
+                  <% if (idx === 0) { %>Esperando confirmación<% } %>
+                  <% if (idx === 1) { %>Pago recibido - Preparando envío<% } %>
+                  <% if (idx === 2) { %>Tu pedido está en camino<% } %>
+                  <% if (idx === 3) { %>Pedido recibido exitosamente<% } %>
+                </span>
+              </div>
+              <% if (idx < 3) { %><div class="tracking-line"></div><% } %>
+            </div>
+          <% }); %>
         </div>
-      <% } %>
-      <% if (order.notas) { %>
-        <div class="order-summary-row">
-          <span><i data-lucide="message-square" style="width:14px;height:14px"></i> Notas</span>
-          <span><%= order.notas %></span>
-        </div>
-      <% } %>
-      <div class="order-summary-row order-summary-total">
-        <span><i data-lucide="dollar-sign" style="width:14px;height:14px"></i> Total</span>
-        <span>$<%= Number(order.totalPagar).toFixed(2) %></span>
-      </div>
-
-      <% if (order.estado === 'PENDIENTE_PAGO') { %>
-        <div class="order-timeline">
-          <h3>Estado del pedido</h3>
-          <div class="timeline">
-            <div class="timeline-step active">
-              <i data-lucide="clock" style="width:16px;height:16px"></i>
-              <span>Pendiente de pago</span>
-            </div>
-            <div class="timeline-step">
-              <i data-lucide="credit-card" style="width:16px;height:16px"></i>
-              <span>Pagado</span>
-            </div>
-            <div class="timeline-step">
-              <i data-lucide="truck" style="width:16px;height:16px"></i>
-              <span>Enviado</span>
-            </div>
-            <div class="timeline-step">
-              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
-              <span>Entregado</span>
-            </div>
-          </div>
-        </div>
-      <% } else if (order.estado === 'PAGADO') { %>
-        <div class="order-timeline">
-          <h3>Estado del pedido</h3>
-          <div class="timeline">
-            <div class="timeline-step completed">
-              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
-              <span>Pendiente de pago</span>
-            </div>
-            <div class="timeline-step active">
-              <i data-lucide="credit-card" style="width:16px;height:16px"></i>
-              <span>Pagado</span>
-            </div>
-            <div class="timeline-step">
-              <i data-lucide="truck" style="width:16px;height:16px"></i>
-              <span>Enviado</span>
-            </div>
-            <div class="timeline-step">
-              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
-              <span>Entregado</span>
-            </div>
-          </div>
-        </div>
-      <% } else if (order.estado === 'ENVIADO') { %>
-        <div class="order-timeline">
-          <h3>Estado del pedido</h3>
-          <div class="timeline">
-            <div class="timeline-step completed">
-              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
-              <span>Pendiente de pago</span>
-            </div>
-            <div class="timeline-step completed">
-              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
-              <span>Pagado</span>
-            </div>
-            <div class="timeline-step active">
-              <i data-lucide="truck" style="width:16px;height:16px"></i>
-              <span>Enviado</span>
-            </div>
-            <div class="timeline-step">
-              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
-              <span>Entregado</span>
-            </div>
-          </div>
-        </div>
-      <% } else if (order.estado === 'ENTREGADO') { %>
-        <div class="order-timeline">
-          <h3>Estado del pedido</h3>
-          <div class="timeline">
-            <div class="timeline-step completed">
-              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
-              <span>Pendiente de pago</span>
-            </div>
-            <div class="timeline-step completed">
-              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
-              <span>Pagado</span>
-            </div>
-            <div class="timeline-step completed">
-              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
-              <span>Enviado</span>
-            </div>
-            <div class="timeline-step active">
-              <i data-lucide="check-circle" style="width:16px;height:16px"></i>
-              <span>Entregado</span>
-            </div>
-          </div>
-        </div>
-      <% } else if (order.estado === 'CANCELADO') { %>
-        <div class="order-cancelled-badge">
-          <i data-lucide="x-circle" style="width:20px;height:20px"></i>
-          <span>Esta orden fue cancelada</span>
-        </div>
+      <% } else { %>
+        <div class="order-cancelled">Esta orden fue cancelada</div>
       <% } %>
     </div>
+  </div>
+
+  <div class="order-detail-sidebar">
+    <div class="order-section">
+      <h2><i data-lucide="info" style="width:20px;height:20px"></i> Detalles</h2>
+      <div class="detail-rows">
+        <div class="detail-row"><span>Fecha</span><strong><%= new Date(order.fechaCreacion).toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }) %></strong></div>
+        <div class="detail-row"><span>Guía</span><strong style="color:var(--primary)"><%= order.numeroGuia || 'Pendiente' %></strong></div>
+        <div class="detail-row"><span>Método de Pago</span><strong><%= order.metodoPago ? order.metodoPago.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—' %></strong></div>
+        <div class="detail-row"><span>Teléfono</span><strong><%= order.telefono || '—' %></strong></div>
+        <div class="detail-row detail-row-total"><span>Total</span><strong>$<%= Number(order.totalPagar).toFixed(2) %></strong></div>
+      </div>
+    </div>
+
+    <% if (order.direccionEnvio || order.ciudad) { %>
+    <div class="order-section">
+      <h2><i data-lucide="map-pin" style="width:20px;height:20px"></i> Dirección de Envío</h2>
+      <div class="address-box">
+        <% if (order.direccionEnvio) { %><p><%= order.direccionEnvio %></p><% } %>
+        <% if (order.ciudad) { %><p><%= order.ciudad %><% if (order.codigoPostal) { %>, CP <%= order.codigoPostal %><% } %></p><% } %>
+        <p>México</p>
+      </div>
+    </div>
+    <% } %>
+
+    <% if (order.notas) { %>
+    <div class="order-section">
+      <h2><i data-lucide="message-square" style="width:20px;height:20px"></i> Notas</h2>
+      <p class="order-notas"><%= order.notas %></p>
+    </div>
+    <% } %>
   </div>
 </div>
 
