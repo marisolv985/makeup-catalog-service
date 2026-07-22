@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EstadoOrder {
+  PENDIENTE_PAGO
+  PAGADO
+  ENVIADO
+  ENTREGADO
+  CANCELADO
+}
+
+model Order {
+  id                  Int         @id @default(autoincrement())
+  usuarioId           String
+  numeroGuia          String?     @unique
+  estado              EstadoOrder @default(PENDIENTE_PAGO)
+  totalPagar          Decimal     @db.Decimal(10, 2)
+  direccionEnvio      String?
+  ciudad              String?
+  codigoPostal        String?
+  telefono            String?
+  metodoPago          String?
+  notas               String?
+  fechaCreacion       DateTime    @default(now())
+  fechaActualizacion  DateTime    @updatedAt
+  items               OrderItem[]
+
+  @@index([usuarioId])
+  @@index([estado])
+  @@index([fechaCreacion])
+}
+
+model OrderItem {
+  id              Int     @id @default(autoincrement())
+  ordenId         Int
+  orden           Order   @relation(fields: [ordenId], references: [id], onDelete: Cascade)
+  productoSku     String
+  cantidad        Int
+  precioUnitario  Decimal @db.Decimal(10, 2)
+  subtotal        Decimal @db.Decimal(10, 2)
+
+  @@index([ordenId])
+  @@index([productoSku])
+}
+
+model Cart {
+  id                  Int        @id @default(autoincrement())
+  usuarioId           String      @unique
+  fechaCreacion       DateTime   @default(now())
+  fechaActualizacion  DateTime   @updatedAt
+  items               CartItem[]
+}
+
+model CartItem {
+  id              Int     @id @default(autoincrement())
+  carritoId       Int
+  carrito         Cart    @relation(fields: [carritoId], references: [id], onDelete: Cascade)
+  productoSku     String
+  cantidad        Int
+  precioUnitario  Decimal @db.Decimal(10, 2)
+  nombreProducto  String
+  imagenUrl       String?
+
+  @@unique([carritoId, productoSku])
+  @@index([carritoId])
+}

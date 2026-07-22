@@ -78,7 +78,7 @@ services:
 
   orders-service:
     build:
-      context: ../orders-service
+      context: ./orders
       dockerfile: Dockerfile
     container_name: glowflow-orders-service
     ports:
