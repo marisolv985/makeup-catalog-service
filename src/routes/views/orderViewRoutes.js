@@ -1,8 +1,16 @@
 const { Router } = require('express');
 const ordersClient = require('../../utils/ordersClient');
-const { requireAuth } = require('../../middlewares/authMiddleware');
+const { requireAuth, requireAdmin } = require('../../middlewares/authMiddleware');
 
 const router = Router();
+
+const buildOrderStats = (orders) => ({
+  total: orders.length,
+  pagadas: orders.filter(o => o.estado === 'PAGADO').length,
+  enviadas: orders.filter(o => o.estado === 'ENVIADO').length,
+  entregadas: orders.filter(o => o.estado === 'ENTREGADO').length,
+  canceladas: orders.filter(o => o.estado === 'CANCELADO').length,
+});
 
 router.get('/cart', requireAuth, async (req, res) => {
   try {
@@ -57,23 +65,39 @@ router.post('/cart/remove', requireAuth, async (req, res) => {
 
 router.post('/cart/checkout', requireAuth, async (req, res) => {
   try {
-    const { direccionEnvio, notas } = req.body;
-    await ordersClient.checkout(req.user, direccionEnvio || null, notas || null);
-    res.redirect('/orders?success=Orden creada exitosamente');
+    const { direccionEnvio, notas, ciudad, codigoPostal, telefono, metodoPago } = req.body;
+    const result = await ordersClient.checkout(req.user, direccionEnvio || null, notas || null, {
+      ciudad: ciudad || null,
+      codigoPostal: codigoPostal || null,
+      telefono: telefono || null,
+      metodoPago: metodoPago || null,
+    });
+    const order = result.data;
+    res.redirect(`/orders/${order.id}?success=Compra confirmada. Guía: ${order.numeroGuia}`);
   } catch (error) {
+    console.error('[Checkout Error]', error.response?.data || error.message);
     const msg = error.response?.data?.message || 'Error al procesar la orden';
-    res.redirect(`/cart?error=${encodeURIComponent(msg)}`);
+    const errors = error.response?.data?.errors;
+    const detail = errors ? errors.map(e => `${e.field}: ${e.message}`).join(', ') : '';
+    res.redirect(`/cart?error=${encodeURIComponent(detail || msg)}`);
   }
 });
 
 router.get('/orders', requireAuth, async (req, res) => {
   try {
     const result = await ordersClient.getOrders(req.user, req.query);
+    const orders = result.data || [];
+    const pagination = result.pagination || { total: 0, page: 1, totalPages: 0 };
+    const isAdmin = req.user && req.user.rol === 'ADMIN';
+    const stats = isAdmin ? buildOrderStats(orders) : {};
+
     res.render('pages/orders', {
-      title: 'Mis Órdenes',
+      title: isAdmin ? 'Todas las Órdenes' : 'Mis Órdenes',
       currentPath: '/orders',
-      orders: result.data || [],
-      pagination: result.pagination || { total: 0, page: 1, totalPages: 0 },
+      orders,
+      pagination,
+      stats,
+      filters: req.query,
       successMessage: req.query.success || null,
       errorMessage: req.query.error || null,
     });
@@ -83,6 +107,8 @@ router.get('/orders', requireAuth, async (req, res) => {
       currentPath: '/orders',
       orders: [],
       pagination: { total: 0, page: 1, totalPages: 0 },
+      stats: {},
+      filters: {},
       errorMessage: 'Error al cargar las órdenes',
     });
   }
@@ -103,6 +129,17 @@ router.get('/orders/:id', requireAuth, async (req, res) => {
     });
   } catch (error) {
     res.redirect('/orders?error=Error al cargar la orden');
+  }
+});
+
+router.post('/admin/orders/:id/status', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { estado } = req.body;
+    await ordersClient.updateOrderStatus(req.user, req.params.id, estado);
+    res.redirect(`/orders/${req.params.id}?success=Estado actualizado a ${estado}`);
+  } catch (error) {
+    const msg = error.response?.data?.message || 'Error al actualizar estado';
+    res.redirect(`/orders?error=${encodeURIComponent(msg)}`);
   }
 });
 

@@ -58,11 +58,18 @@ async function removeFromCart(user, sku) {
   return res.data;
 }
 
-async function checkout(user, direccionEnvio, notas) {
+async function checkout(user, direccionEnvio, notas, checkoutData = {}) {
   const token = getToken(user);
   if (!token) throw new Error('No autenticado');
-  const res = await axios.post(`${ORDERS_SERVICE_URL}/api/v1/cart/checkout`,
-    { direccionEnvio, notas },
+  const body = {};
+  if (direccionEnvio) body.direccionEnvio = direccionEnvio;
+  if (notas) body.notas = notas;
+  if (checkoutData.ciudad) body.ciudad = checkoutData.ciudad;
+  if (checkoutData.codigoPostal) body.codigoPostal = checkoutData.codigoPostal;
+  if (checkoutData.telefono) body.telefono = checkoutData.telefono;
+  if (checkoutData.metodoPago) body.metodoPago = checkoutData.metodoPago;
+  const res = await axios.post(`${ORDERS_SERVICE_URL}/api/v1/orders/checkout`,
+    body,
     { headers: { Authorization: `Bearer ${token}` }, timeout: 10000 }
   );
   return res.data;
@@ -101,6 +108,16 @@ async function getOrderById(user, id) {
   }
 }
 
+async function updateOrderStatus(user, orderId, estado) {
+  const token = getToken(user);
+  if (!token) throw new Error('No autenticado');
+  const res = await axios.patch(`${ORDERS_SERVICE_URL}/api/v1/orders/${orderId}/status`,
+    { estado },
+    { headers: { Authorization: `Bearer ${token}` }, timeout: 5000 }
+  );
+  return res.data;
+}
+
 module.exports = {
   getCart,
   addToCart,
@@ -109,4 +126,5 @@ module.exports = {
   checkout,
   getOrders,
   getOrderById,
+  updateOrderStatus,
 };
