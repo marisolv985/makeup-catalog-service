@@ -2,44 +2,106 @@
 
 <section class="page-header">
   <div class="page-header-content">
-    <h1>Gestión de Usuarios</h1>
+    <h1><i data-lucide="users" style="width:28px;height:28px"></i> Gestión de Usuarios</h1>
   </div>
 </section>
 
-<section class="inventory-section">
-  <div class="inventory-actions">
-    <% if (users && users.length > 0) { %>
-      <% users.forEach(function(u) { %>
-        <div class="inventory-card">
-          <h3><i data-lucide="user" style="width:18px;height:18px"></i> <%= u.username %></h3>
-          <p><%= u.email %></p>
-          <p class="text-muted"><%= u.nombre || 'Sin nombre' %></p>
-          <div style="margin: 0.8rem 0;">
-            <span class="product-status status-<%= u.rol === 'ADMIN' ? 'disponible' : u.rol === 'EDITOR' ? 'agotado' : 'inactivo' %>"><%= u.rol %></span>
-            <% if (!u.activo) { %>
-              <span class="product-status status-inactivo">INACTIVO</span>
-            <% } %>
-          </div>
-          <p class="text-muted" style="font-size:0.8rem">Registrado: <%= new Date(u.fechaCreacion).toLocaleDateString('es-MX') %></p>
-          <form method="POST" action="/admin/users/<%= u._id %>/role" style="margin-top:0.8rem">
-            <div class="form-group" style="margin-bottom:0.5rem">
-              <select name="rol" style="width:100%;padding:0.4rem;border:1px solid var(--border);border-radius:var(--radius)">
-                <% ['ADMIN', 'EDITOR', 'VIEWER'].forEach(function(r) { %>
-                  <option value="<%= r %>" <%= u.rol === r ? 'selected' : '' %>><%= r %></option>
-                <% }); %>
-              </select>
-            </div>
-            <button type="submit" class="btn btn-sm btn-primary"><i data-lucide="save" style="width:14px;height:14px"></i> Actualizar rol</button>
-          </form>
-        </div>
-      <% }); %>
-    <% } else { %>
-      <div class="empty-state">
-        <i data-lucide="users" class="empty-icon"></i>
-        <h3>No hay usuarios registrados</h3>
-      </div>
-    <% } %>
+<% if (successMessage) { %>
+  <div class="alert alert-success"><i data-lucide="check-circle" style="width:18px;height:18px"></i> <%= successMessage %></div>
+<% } %>
+<% if (errorMessage) { %>
+  <div class="alert alert-danger"><i data-lucide="alert-circle" style="width:18px;height:18px"></i> <%= errorMessage %></div>
+<% } %>
+
+<% if (!users || users.length === 0) { %>
+  <div class="empty-state">
+    <i data-lucide="users" style="width:64px;height:64px;opacity:0.3"></i>
+    <h2>No hay usuarios registrados</h2>
+    <p>Los usuarios aparecerán aquí cuando se registren</p>
   </div>
-</section>
+<% } else { %>
+
+<div class="users-stats">
+  <%
+    var total = users.length;
+    var admins = users.filter(function(u){return u.rol==='ADMIN'}).length;
+    var editores = users.filter(function(u){return u.rol==='EDITOR'}).length;
+    var viewers = users.filter(function(u){return u.rol==='VIEWER'}).length;
+  %>
+  <div class="inv-stat">
+    <div class="inv-stat-icon" style="background:var(--primary-light);color:var(--primary)"><i data-lucide="users"></i></div>
+    <div class="inv-stat-body"><span class="inv-stat-num"><%= total %></span><span>Total</span></div>
+  </div>
+  <div class="inv-stat">
+    <div class="inv-stat-icon" style="background:linear-gradient(135deg,#FEF2F2,#FEE2E2);color:#EF4444"><i data-lucide="shield"></i></div>
+    <div class="inv-stat-body"><span class="inv-stat-num"><%= admins %></span><span>Administradores</span></div>
+  </div>
+  <div class="inv-stat">
+    <div class="inv-stat-icon" style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE);color:#3B82F6"><i data-lucide="user-check"></i></div>
+    <div class="inv-stat-body"><span class="inv-stat-num"><%= editores %></span><span>Editores</span></div>
+  </div>
+  <div class="inv-stat">
+    <div class="inv-stat-icon" style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7);color:#22C55E"><i data-lucide="eye"></i></div>
+    <div class="inv-stat-body"><span class="inv-stat-num"><%= viewers %></span><span>Clientes</span></div>
+  </div>
+</div>
+
+<div class="users-table-wrapper">
+  <table class="users-table">
+    <thead>
+      <tr>
+        <th>Usuario</th>
+        <th>Email</th>
+        <th>Nombre</th>
+        <th>Rol</th>
+        <th>Estado</th>
+        <th>Registro</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(function(u) { %>
+        <tr>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar" style="background:linear-gradient(135deg,<%= u.rol==='ADMIN'?'#FEF2F2,#FEE2E2' : u.rol==='EDITOR'?'#EFF6FF,#DBEAFE' : '#F0FDF4,#DCFCE7' %>);color:<%= u.rol==='ADMIN'?'#EF4444' : u.rol==='EDITOR'?'#3B82F6' : '#22C55E' %>">
+                <%= (u.username || '?')[0].toUpperCase() %>
+              </div>
+              <strong><%= u.username %></strong>
+            </div>
+          </td>
+          <td><%= u.email || '—' %></td>
+          <td><%= u.nombre || '—' %></td>
+          <td>
+            <span class="badge <%= u.rol==='ADMIN'?'badge-danger': u.rol==='EDITOR'?'badge-info':'badge-success' %>">
+              <i data-lucide="<%= u.rol==='ADMIN'?'shield': u.rol==='EDITOR'?'user-check':'eye' %>" style="width:12px;height:12px"></i>
+              <%= u.rol %>
+            </span>
+          </td>
+          <td>
+            <% if (u.activo !== false) { %>
+              <span class="badge badge-success"><i data-lucide="check-circle" style="width:12px;height:12px"></i> Activo</span>
+            <% } else { %>
+              <span class="badge badge-danger"><i data-lucide="x-circle" style="width:12px;height:12px"></i> Inactivo</span>
+            <% } %>
+          </td>
+          <td><%= new Date(u.fechaCreacion).toLocaleDateString('es-MX', {month:'short',day:'numeric',year:'numeric'}) %></td>
+          <td>
+            <form method="POST" action="/admin/users/<%= u._id %>/role" class="user-role-form">
+              <select name="rol">
+                <option value="ADMIN" <%= u.rol==='ADMIN'?'selected':'' %>>ADMIN</option>
+                <option value="EDITOR" <%= u.rol==='EDITOR'?'selected':'' %>>EDITOR</option>
+                <option value="VIEWER" <%= u.rol==='VIEWER'?'selected':'' %>>VIEWER</option>
+              </select>
+              <button type="submit" class="btn btn-sm btn-primary">Guardar</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</div>
+
+<% } %>
 
 <%- include('../layouts/footer') %>
