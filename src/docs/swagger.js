@@ -113,7 +113,7 @@ El \`orders-service\` puede consultar stock y existencia usando estos endpoints 
     },
     security: [{ bearerAuth: [] }],
   },
-  apis: [],
+  apis: ['./src/routes/cosmeticsRoutes.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

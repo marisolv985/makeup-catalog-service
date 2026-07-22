@@ -69,7 +69,7 @@ const products = [
   {
     sku: 'ROS-002',
     titulo: 'Polvo Compacto Matte Finish',
-    descripcion: 'Polvo compacto de acabado mate que fija el maquillaje y controla la brillanze. Puede usarse solo o sobre base.',
+    descripcion: 'Polvo compacto de acabado mate que fija el maquillaje y controla la brillantez. Puede usarse solo o sobre base.',
     marca: 'GlowFlow',
     categoria: 'Rostro',
     precio: 329.00,

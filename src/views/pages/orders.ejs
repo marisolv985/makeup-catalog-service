@@ -1,0 +1,112 @@
+<%- include('../layouts/header') %>
+
+<%
+var isAdmin = typeof user !== 'undefined' && user && user.rol === 'ADMIN';
+var filtroEstados = { '': 'Todos', 'PAGADO': 'Pagado', 'ENVIADO': 'Enviado', 'ENTREGADO': 'Entregado', 'CANCELADO': 'Cancelado' };
+var currentEstado = typeof filters !== 'undefined' && filters.estado ? filters.estado : '';
+var totalPages = pagination && pagination.totalPages ? pagination.totalPages : 0;
+%>
+
+<section class="page-header">
+  <div class="page-header-content">
+    <div>
+      <a href="/" class="back-link"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Dashboard</a>
+      <h1><i data-lucide="package" style="width:28px;height:28px"></i> <%= isAdmin ? 'Todas las Órdenes' : 'Mis Órdenes' %></h1>
+    </div>
+  </div>
+</section>
+
+<% if (successMessage) { %>
+  <div class="alert alert-success"><i data-lucide="check-circle" style="width:18px;height:18px"></i> <%= successMessage %></div>
+<% } %>
+<% if (errorMessage) { %>
+  <div class="alert alert-danger"><i data-lucide="alert-circle" style="width:18px;height:18px"></i> <%= errorMessage %></div>
+<% } %>
+
+<% if (isAdmin && stats && Object.keys(stats).length > 0) { %>
+<div class="orders-toolbar">
+  <div class="orders-stats">
+    <div class="orders-stat"><span class="orders-stat-num"><%= stats.total || 0 %></span><span>Total</span></div>
+    <div class="orders-stat"><span class="orders-stat-num" style="color:var(--info)"><%= stats.pagadas || 0 %></span><span>Pagadas</span></div>
+    <div class="orders-stat"><span class="orders-stat-num" style="color:var(--primary)"><%= stats.enviadas || 0 %></span><span>Enviadas</span></div>
+    <div class="orders-stat"><span class="orders-stat-num" style="color:var(--success)"><%= stats.entregadas || 0 %></span><span>Entregadas</span></div>
+    <div class="orders-stat"><span class="orders-stat-num" style="color:var(--danger)"><%= stats.canceladas || 0 %></span><span>Canceladas</span></div>
+  </div>
+  <form class="orders-filter" action="/orders" method="GET">
+    <select name="estado" onchange="this.form.submit()">
+      <% Object.keys(filtroEstados).forEach(function(k) { %>
+        <option value="<%= k %>" <%= currentEstado === k ? 'selected' : '' %>><%= filtroEstados[k] %></option>
+      <% }); %>
+    </select>
+  </form>
+</div>
+<% } %>
+
+<% if (!orders || orders.length === 0) { %>
+  <div class="empty-state">
+    <i data-lucide="package" style="width:64px;height:64px;opacity:0.3"></i>
+    <h2><%= isAdmin ? 'No hay órdenes aún' : 'No tienes órdenes aún' %></h2>
+    <p><%= isAdmin ? 'Las órdenes de tus clientes aparecerán aquí' : 'Explora nuestro catálogo y haz tu primera compra' %></p>
+    <% if (!isAdmin) { %><a href="/products" class="btn btn-primary"><i data-lucide="shopping-bag" style="width:16px;height:16px"></i> Ir al Catálogo</a><% } %>
+  </div>
+<% } else { %>
+  <div class="orders-table-wrapper">
+    <table class="orders-table">
+      <thead>
+        <tr>
+          <th># Orden</th>
+          <% if (isAdmin) { %><th>Cliente</th><% } %>
+          <th>Guía</th>
+          <th>Fecha</th>
+          <th>Productos</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <% if (isAdmin) { %><th>Acción</th><% } %>
+        </tr>
+      </thead>
+      <tbody>
+        <% orders.forEach(function(order) {
+          var ei = {
+            'PENDIENTE_PAGO': { icon: 'clock', label: 'Pend. Pago', cls: 'badge-warning' },
+            'PAGADO': { icon: 'credit-card', label: 'Pagado', cls: 'badge-info' },
+            'ENVIADO': { icon: 'truck', label: 'Enviado', cls: 'badge-primary' },
+            'ENTREGADO': { icon: 'check-circle', label: 'Entregado', cls: 'badge-success' },
+            'CANCELADO': { icon: 'x-circle', label: 'Cancelado', cls: 'badge-danger' }
+          }[order.estado] || { icon: 'clock', label: order.estado, cls: 'badge-warning' };
+        %>
+        <tr onclick="window.location.href='/orders/<%= order.id %>'">
+          <td><span class="order-link">#<%= order.id %></span></td>
+          <% if (isAdmin) { %><td><span class="order-client"><%= (order.usuarioId || '—').substring(0,8) %></span></td><% } %>
+          <td><span class="order-guia"><%= order.numeroGuia || '—' %></span></td>
+          <td><%= new Date(order.fechaCreacion).toLocaleDateString('es-MX', {month:'short',day:'numeric',year:'numeric'}) %></td>
+          <td><%= order.items ? order.items.length : 0 %></td>
+          <td><strong>$<%= Number(order.totalPagar).toFixed(2) %></strong></td>
+          <td><span class="badge <%= ei.cls %>"><i data-lucide="<%= ei.icon %>" style="width:12px;height:12px"></i> <%= ei.label %></span></td>
+          <% if (isAdmin) { %>
+          <td onclick="event.stopPropagation()">
+            <form method="POST" action="/admin/orders/<%= order.id %>/status" class="status-form">
+              <select name="estado" onchange="this.form.submit()" class="status-select">
+                <option value="PAGADO" <%= order.estado==='PAGADO'?'selected':'' %>>Pagado</option>
+                <option value="ENVIADO" <%= order.estado==='ENVIADO'?'selected':'' %>>Enviado</option>
+                <option value="ENTREGADO" <%= order.estado==='ENTREGADO'?'selected':'' %>>Entregado</option>
+                <option value="CANCELADO" <%= order.estado==='CANCELADO'?'selected':'' %>>Cancelado</option>
+              </select>
+            </form>
+          </td>
+          <% } %>
+        </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+
+  <% if (totalPages > 1) { %>
+    <div class="pagination">
+      <% for (var p = 1; p <= totalPages; p++) { %>
+        <a href="/orders?page=<%= p %><%= currentEstado ? '&estado=' + currentEstado : '' %>" class="page-link <%= p === (pagination.page || 1) ? 'active' : '' %>"><%= p %></a>
+      <% } %>
+    </div>
+  <% } %>
+<% } %>
+
+<%- include('../layouts/footer') %>

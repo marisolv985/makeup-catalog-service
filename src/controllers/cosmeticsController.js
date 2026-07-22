@@ -1,5 +1,4 @@
 const cosmeticsService = require('../services/cosmeticsService');
-const { breakerGetStock, breakerDecreaseStock, breakerExists, breakerFindProduct } = require('../config/circuitBreakers');
 
 class CosmeticsController {
   async create(req, res, next) {
@@ -93,19 +92,22 @@ class CosmeticsController {
 
   async getStock(req, res, next) {
     try {
-      const result = await breakerGetStock.fire(req.params.sku);
-      if (!result) {
-        return res.status(404).json({
-          success: false,
-          message: 'Producto no encontrado',
-          errors: [],
-        });
-      }
+      const result = await cosmeticsService.getStock(req.params.sku);
       res.status(200).json({
         sku: result.sku,
         stockDisponible: result.stockDisponible,
+        titulo: result.titulo,
+        precio: result.precio,
+        imagenUrl: result.imagenUrl,
       });
     } catch (error) {
+      if (error.statusCode === 404) {
+        return res.status(404).json({
+          success: false,
+          message: error.message,
+          errors: [],
+        });
+      }
       res.status(503).json({
         success: false,
         message: 'Catálogo en mantenimiento temporal. Intenta más tarde.',
@@ -116,9 +118,9 @@ class CosmeticsController {
 
   async exists(req, res, next) {
     try {
-      const exists = await breakerExists.fire(req.params.sku);
+      const result = await cosmeticsService.exists(req.params.sku);
       res.status(200).json({
-        exists,
+        exists: result.exists,
       });
     } catch (error) {
       res.status(503).json({
@@ -131,30 +133,21 @@ class CosmeticsController {
 
   async decreaseStock(req, res, next) {
     try {
-      const product = await breakerDecreaseStock.fire(req.body.sku, req.body.cantidad);
-      if (!product) {
-        return res.status(400).json({
+      const result = await cosmeticsService.decreaseStock(req.body.sku, req.body.cantidad);
+      res.status(200).json({
+        sku: result.sku,
+        stockDisponible: result.stockDisponible,
+        estado: result.estado,
+      });
+    } catch (error) {
+      if (error.statusCode === 503) {
+        return res.status(503).json({
           success: false,
-          message: 'Stock insuficiente o producto no encontrado',
+          message: 'Catálogo en mantenimiento temporal. Intenta más tarde.',
           errors: [],
         });
       }
-      const newEstado = product.stockDisponible === 0 ? 'AGOTADO' : product.estado;
-      if (product.stockDisponible === 0) {
-        const Product = require('../models/Product');
-        await Product.findByIdAndUpdate(product._id, { estado: 'AGOTADO' });
-      }
-      res.status(200).json({
-        sku: product.sku,
-        stockDisponible: product.stockDisponible,
-        estado: newEstado,
-      });
-    } catch (error) {
-      res.status(503).json({
-        success: false,
-        message: 'Catálogo en mantenimiento temporal. Intenta más tarde.',
-        errors: [],
-      });
+      next(error);
     }
   }
 

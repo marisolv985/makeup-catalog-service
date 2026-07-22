@@ -1,0 +1,14 @@
+<% if (typeof breadcrumbs !== 'undefined' && breadcrumbs && breadcrumbs.length > 0) { %>
+<nav class="breadcrumb" aria-label="breadcrumb">
+  <div class="container">
+    <% breadcrumbs.forEach(function(crumb, i) { %>
+      <% if (i > 0) { %><i data-lucide="chevron-right" class="breadcrumb-sep" style="width:12px;height:12px"></i><% } %>
+      <% if (crumb.href) { %>
+        <a href="<%= crumb.href %>"><%= crumb.label %></a>
+      <% } else { %>
+        <span class="breadcrumb-current"><%= crumb.label %></span>
+      <% } %>
+    <% }); %>
+  </div>
+</nav>
+<% } %>

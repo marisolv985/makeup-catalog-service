@@ -1,10 +1,18 @@
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const rateLimit = require('express-rate-limit');
+const { JWT_SECRET } = require('../config/constants');
 
 const router = Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'glowflow_catalog_secret_key_change_in_production';
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: 'Demasiados intentos. Intenta de nuevo en 15 minutos.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 function generateToken(user) {
   return jwt.sign(
@@ -34,7 +42,7 @@ router.get('/login', (req, res) => {
   });
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
 
@@ -93,7 +101,7 @@ router.get('/register', (req, res) => {
   });
 });
 
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   try {
     const { username, email, password, confirmPassword, nombre } = req.body;
 

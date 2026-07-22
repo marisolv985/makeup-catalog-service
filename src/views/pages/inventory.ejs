@@ -1,72 +1,156 @@
 <%- include('../layouts/header') %>
 
 <section class="page-header">
-  <h1>Gestión de Inventario</h1>
-  <p class="subtitle">Administra el stock de productos del catálogo</p>
-</section>
-
-<section class="inventory-section">
-  <div class="inventory-actions">
-    <div class="inventory-card">
-      <h3>Descontar Stock</h3>
-      <p>Reduce el inventario de un producto específico.</p>
-      <form id="decreaseForm" class="inventory-form">
-        <div class="form-group">
-          <label for="dec-sku">SKU del Producto</label>
-          <input type="text" id="dec-sku" name="sku" required placeholder="COSM-LIP-RED-001">
-        </div>
-        <div class="form-group">
-          <label for="dec-cantidad">Cantidad</label>
-          <input type="number" id="dec-cantidad" name="cantidad" required min="1" value="1" placeholder="1">
-        </div>
-        <button type="submit" class="btn btn-danger">Descontar</button>
-      </form>
-      <div id="decreaseResult" class="inventory-result" style="display:none;"></div>
-    </div>
-
-    <div class="inventory-card">
-      <h3>Incrementar Stock</h3>
-      <p>Aumenta el inventario de un producto específico.</p>
-      <form id="increaseForm" class="inventory-form">
-        <div class="form-group">
-          <label for="inc-sku">SKU del Producto</label>
-          <input type="text" id="inc-sku" name="sku" required placeholder="COSM-LIP-RED-001">
-        </div>
-        <div class="form-group">
-          <label for="inc-cantidad">Cantidad</label>
-          <input type="number" id="inc-cantidad" name="cantidad" required min="1" value="1" placeholder="1">
-        </div>
-        <button type="submit" class="btn btn-primary">Incrementar</button>
-      </form>
-      <div id="increaseResult" class="inventory-result" style="display:none;"></div>
-    </div>
-
-    <div class="inventory-card">
-      <h3>Consultar Stock</h3>
-      <p>Verifica el stock actual de un producto por SKU.</p>
-      <form id="stockForm" class="inventory-form">
-        <div class="form-group">
-          <label for="chk-sku">SKU del Producto</label>
-          <input type="text" id="chk-sku" name="sku" required placeholder="COSM-LIP-RED-001">
-        </div>
-        <button type="submit" class="btn btn-secondary">Consultar</button>
-      </form>
-      <div id="stockResult" class="inventory-result" style="display:none;"></div>
-    </div>
-
-    <div class="inventory-card">
-      <h3>Verificar Existencia</h3>
-      <p>Comprueba si un producto existe en el catálogo.</p>
-      <form id="existsForm" class="inventory-form">
-        <div class="form-group">
-          <label for="ex-sku">SKU del Producto</label>
-          <input type="text" id="ex-sku" name="sku" required placeholder="COSM-LIP-RED-001">
-        </div>
-        <button type="submit" class="btn btn-secondary">Verificar</button>
-      </form>
-      <div id="existsResult" class="inventory-result" style="display:none;"></div>
+  <div class="page-header-content">
+    <div>
+      <h1><i data-lucide="warehouse" style="width:28px;height:28px"></i> Gestión de Inventario</h1>
     </div>
   </div>
 </section>
+
+<div class="inv-stats" id="invStats">
+  <div class="inv-stat">
+    <div class="inv-stat-icon" style="background:var(--info-light);color:var(--info)"><i data-lucide="package"></i></div>
+    <div class="inv-stat-body"><span class="inv-stat-num" id="statTotal">—</span><span>Total</span></div>
+  </div>
+  <div class="inv-stat">
+    <div class="inv-stat-icon" style="background:var(--success-light);color:var(--success)"><i data-lucide="check-circle"></i></div>
+    <div class="inv-stat-body"><span class="inv-stat-num" id="statAvailable">—</span><span>Disponibles</span></div>
+  </div>
+  <div class="inv-stat">
+    <div class="inv-stat-icon" style="background:var(--warning-light);color:var(--warning)"><i data-lucide="alert-triangle"></i></div>
+    <div class="inv-stat-body"><span class="inv-stat-num" id="statLow">—</span><span>Stock Bajo</span></div>
+  </div>
+  <div class="inv-stat">
+    <div class="inv-stat-icon" style="background:var(--danger-light);color:var(--danger)"><i data-lucide="x-circle"></i></div>
+    <div class="inv-stat-body"><span class="inv-stat-num" id="statOut">—</span><span>Agotados</span></div>
+  </div>
+</div>
+
+<div class="inv-cards">
+  <div class="inv-card">
+    <div class="inv-card-header">
+      <div class="inv-card-icon" style="background:linear-gradient(135deg,#FEF2F2,#FEE2E2);color:#EF4444"><i data-lucide="minus-circle"></i></div>
+      <div><h3>Descontar Stock</h3><p>Reduce el inventario de un producto</p></div>
+    </div>
+    <form id="decreaseForm" class="inv-form">
+      <div class="inv-form-row">
+        <input type="text" id="dec-sku" placeholder="SKU del producto" required>
+        <input type="number" id="dec-cantidad" min="1" value="1" required>
+        <button type="submit" class="btn btn-danger">Descontar</button>
+      </div>
+    </form>
+    <div id="decreaseResult" class="inv-result" style="display:none"></div>
+  </div>
+
+  <div class="inv-card">
+    <div class="inv-card-header">
+      <div class="inv-card-icon" style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7);color:#22C55E"><i data-lucide="plus-circle"></i></div>
+      <div><h3>Incrementar Stock</h3><p>Aumenta el inventario de un producto</p></div>
+    </div>
+    <form id="increaseForm" class="inv-form">
+      <div class="inv-form-row">
+        <input type="text" id="inc-sku" placeholder="SKU del producto" required>
+        <input type="number" id="inc-cantidad" min="1" value="1" required>
+        <button type="submit" class="btn btn-primary">Incrementar</button>
+      </div>
+    </form>
+    <div id="increaseResult" class="inv-result" style="display:none"></div>
+  </div>
+
+  <div class="inv-card">
+    <div class="inv-card-header">
+      <div class="inv-card-icon" style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE);color:#3B82F6"><i data-lucide="search"></i></div>
+      <div><h3>Consultar Stock</h3><p>Verifica el stock actual de un producto</p></div>
+    </div>
+    <form id="stockForm" class="inv-form">
+      <div class="inv-form-row">
+        <input type="text" id="chk-sku" placeholder="SKU del producto" required>
+        <button type="submit" class="btn btn-secondary">Consultar</button>
+      </div>
+    </form>
+    <div id="stockResult" class="inv-result" style="display:none"></div>
+  </div>
+
+  <div class="inv-card">
+    <div class="inv-card-header">
+      <div class="inv-card-icon" style="background:linear-gradient(135deg,#EDE9FE,#DDD6FE);color:#7C3AED"><i data-lucide="help-circle"></i></div>
+      <div><h3>Verificar Producto</h3><p>Comprueba si un producto existe en el catálogo</p></div>
+    </div>
+    <form id="existsForm" class="inv-form">
+      <div class="inv-form-row">
+        <input type="text" id="ex-sku" placeholder="SKU del producto" required>
+        <button type="submit" class="btn btn-secondary">Verificar</button>
+      </div>
+    </form>
+    <div id="existsResult" class="inv-result" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+function makeForm(id, url, method) {
+  var f = document.getElementById(id);
+  f.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var inputs = f.querySelectorAll('input');
+    var body = {};
+    inputs.forEach(function(inp) { if (inp.name || inp.id.includes('sku') || inp.id.includes('cantidad')) {
+      if (inp.id.includes('sku')) body.sku = inp.value.trim();
+      else if (inp.id.includes('cantidad')) body.cantidad = parseInt(inp.value) || 1;
+    }});
+    if (!body.sku) { showResult(id + 'Result', 'error', 'Ingresa un SKU'); return; }
+    fetch('/api/v1/cosmetics' + url, { method: method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) })
+      .then(function(r) { return r.json().then(function(d) { return {ok:r.ok, data:d}; }); })
+      .then(function(r) {
+        var msg = r.data.message || r.data.data?.stockDisponible;
+        if (id === 'stockForm') msg = 'Stock: ' + (r.data.data?.stockDisponible ?? '—') + ' | ' + (r.data.data?.titulo || '');
+        if (id === 'existsForm') msg = r.data.data?.exists ? 'El producto existe en el catálogo' : 'El producto NO existe';
+        showResult(id + 'Result', r.ok ? 'success' : 'error', msg);
+        if (r.ok) loadStats();
+      })
+      .catch(function() { showResult(id + 'Result', 'error', 'Error de conexión'); });
+  });
+}
+
+function showResult(id, type, msg) {
+  var el = document.getElementById(id);
+  el.style.display = 'block';
+  el.className = 'inv-result inv-result-' + type;
+  el.textContent = msg;
+  setTimeout(function() { el.style.display = 'none'; }, 5000);
+}
+
+function loadStats() {
+  fetch('/api/v1/cosmetics?limit=200')
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+      var p = res.data || [];
+      document.getElementById('statTotal').textContent = p.length;
+      document.getElementById('statAvailable').textContent = p.filter(function(pr) { return (pr.stockDisponible||0) > 0 && pr.estado !== 'INACTIVO'; }).length;
+      document.getElementById('statLow').textContent = p.filter(function(pr) { return (pr.stockDisponible||0) > 0 && (pr.stockDisponible||0) <= 5 && pr.estado !== 'INACTIVO'; }).length;
+      document.getElementById('statOut').textContent = p.filter(function(pr) { return (pr.stockDisponible||0) === 0 && pr.estado !== 'INACTIVO'; }).length;
+    });
+}
+
+makeForm('decreaseForm', '/stock/decrease', 'POST');
+makeForm('increaseForm', '/stock/increase', 'POST');
+makeForm('stockForm', '/stock/', 'GET');  stockForm.addEventListener('submit',function(e){
+  e.preventDefault(); var sku = document.getElementById('chk-sku').value.trim();
+  if(!sku){showResult('stockResult','error','Ingresa un SKU');return;}
+  fetch('/api/v1/cosmetics/stock/'+sku).then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d};});}).then(function(r){
+    if(r.ok){var d=r.data.data;showResult('stockResult','success','Stock: '+(d.stockDisponible??'—')+' | '+d.titulo);loadStats();}
+    else showResult('stockResult','error',r.data.message||'No encontrado');
+  }).catch(function(){showResult('stockResult','error','Error');});
+});
+makeForm('existsForm', '/exists/', 'GET');  existsForm.addEventListener('submit',function(e){
+  e.preventDefault(); var sku = document.getElementById('ex-sku').value.trim();
+  if(!sku){showResult('existsResult','error','Ingresa un SKU');return;}
+  fetch('/api/v1/cosmetics/exists/'+sku).then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d};});}).then(function(r){
+    showResult('existsResult',r.data.data?.exists?'success':'error',r.data.data?.exists?'El producto EXISTE en el catálogo':'El producto NO EXISTE en el catálogo');
+  }).catch(function(){showResult('existsResult','error','Error');});
+});
+
+loadStats();
+</script>
 
 <%- include('../layouts/footer') %>

@@ -17,6 +17,19 @@ function authHeaders() {
   return headers;
 }
 
+function setLoading(form, loading) {
+  const btn = form.querySelector('button[type="submit"]');
+  if (!btn) return;
+  if (loading) {
+    btn.dataset.originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span> Cargando...';
+    btn.disabled = true;
+  } else {
+    btn.innerHTML = btn.dataset.originalText || btn.innerHTML;
+    btn.disabled = false;
+  }
+}
+
 async function apiRequest(url, options = {}) {
   try {
     const response = await fetch(url, {
@@ -73,7 +86,7 @@ function addImageField() {
   if (!container) return;
   const div = document.createElement('div');
   div.className = 'input-with-button';
-  div.innerHTML = '<input type="url" name="imagenes" placeholder="https://ejemplo.com/imagen.jpg">' +
+  div.innerHTML = '<input type="url" name="imagenesUrl" placeholder="https://ejemplo.com/imagen.jpg">' +
     '<button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">×</button>';
   container.appendChild(div);
 }
@@ -83,13 +96,16 @@ document.addEventListener('DOMContentLoaded', function () {
   if (decreaseForm) {
     decreaseForm.addEventListener('submit', async function (e) {
       e.preventDefault();
+      setLoading(this, true);
       const sku = document.getElementById('dec-sku').value;
       const cantidad = parseInt(document.getElementById('dec-cantidad').value, 10);
       const result = await apiRequest(API_BASE + '/stock/decrease', {
         method: 'PATCH',
         body: JSON.stringify({ sku, cantidad }),
       });
-      showResult('decreaseResult', result.ok, result.data.message, result.data.data);
+      setLoading(this, false);
+      const msg = result.ok ? 'Stock descontado exitosamente' : (result.data.message || 'Error al descontar stock');
+      showResult('decreaseResult', result.ok, msg, result.data);
     });
   }
 
@@ -97,13 +113,16 @@ document.addEventListener('DOMContentLoaded', function () {
   if (increaseForm) {
     increaseForm.addEventListener('submit', async function (e) {
       e.preventDefault();
+      setLoading(this, true);
       const sku = document.getElementById('inc-sku').value;
       const cantidad = parseInt(document.getElementById('inc-cantidad').value, 10);
       const result = await apiRequest(API_BASE + '/stock/increase', {
         method: 'PATCH',
         body: JSON.stringify({ sku, cantidad }),
       });
-      showResult('increaseResult', result.ok, result.data.message, result.data.data);
+      setLoading(this, false);
+      const msg = result.ok ? 'Stock incrementado exitosamente' : (result.data.message || 'Error al incrementar stock');
+      showResult('increaseResult', result.ok, msg, result.data);
     });
   }
 
@@ -111,9 +130,12 @@ document.addEventListener('DOMContentLoaded', function () {
   if (stockForm) {
     stockForm.addEventListener('submit', async function (e) {
       e.preventDefault();
+      setLoading(this, true);
       const sku = document.getElementById('chk-sku').value;
       const result = await apiRequest(API_BASE + '/stock/' + encodeURIComponent(sku));
-      showResult('stockResult', result.ok, result.data.message, result.data.data);
+      setLoading(this, false);
+      const msg = result.ok ? 'Stock consultado' : (result.data.message || 'Error al consultar stock');
+      showResult('stockResult', result.ok, msg, result.data);
     });
   }
 
@@ -121,9 +143,12 @@ document.addEventListener('DOMContentLoaded', function () {
   if (existsForm) {
     existsForm.addEventListener('submit', async function (e) {
       e.preventDefault();
+      setLoading(this, true);
       const sku = document.getElementById('ex-sku').value;
       const result = await apiRequest(API_BASE + '/exists/' + encodeURIComponent(sku));
-      showResult('existsResult', result.ok, result.data.message, result.data.data);
+      setLoading(this, false);
+      const msg = result.ok ? 'Verificación completada' : (result.data.message || 'Error al verificar existencia');
+      showResult('existsResult', result.ok, msg, result.data);
     });
   }
 

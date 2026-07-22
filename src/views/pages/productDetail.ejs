@@ -1,4 +1,8 @@
 <%- include('../layouts/header') %>
+<%- include('../partials/breadcrumb') %>
+
+<% const isAdmin = typeof user !== 'undefined' && user && user.rol === 'ADMIN'; %>
+<% const isLogged = typeof user !== 'undefined' && user; %>
 
 <section class="page-header">
   <div class="page-header-content">
@@ -6,9 +10,11 @@
       <a href="/products" class="back-link"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Volver al catálogo</a>
       <h1><%= product.titulo %></h1>
     </div>
+    <% if (isAdmin) { %>
     <div class="page-header-actions">
       <a href="/products/<%= product._id %>/edit" class="btn btn-primary"><i data-lucide="pencil" style="width:16px;height:16px"></i> Editar</a>
     </div>
+    <% } %>
   </div>
 </section>
 
@@ -16,7 +22,7 @@
   <div class="product-detail-grid">
     <div class="product-detail-images">
       <% if (product.imagenes && product.imagenes.length > 0) { %>
-        <div class="main-image">
+        <div class="main-image" onclick="openLightbox(this.querySelector('img').src)" style="cursor:zoom-in">
           <img src="<%= product.imagenes[0] %>" alt="<%= product.titulo %>" onerror="this.src='/images/placeholder.svg'">
         </div>
         <% if (product.imagenes.length > 1) { %>
@@ -47,6 +53,23 @@
       <p class="detail-sku"><i data-lucide="hash" style="width:14px;height:14px"></i> SKU: <code><%= product.sku %></code></p>
 
       <div class="detail-price">$<%= product.precio.toFixed(2) %></div>
+
+      <% if (isLogged && product.estado === 'DISPONIBLE' && product.stockDisponible > 0) { %>
+        <form action="/cart/add" method="POST" class="add-to-cart-form">
+          <input type="hidden" name="productoSku" value="<%= product.sku %>">
+          <div class="qty-selector">
+            <label><i data-lucide="shopping-bag" style="width:14px;height:14px"></i> Cantidad:</label>
+            <input type="number" name="cantidad" value="1" min="1" max="<%= product.stockDisponible %>" class="qty-input">
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">
+            <i data-lucide="cart-plus" style="width:16px;height:16px"></i> Agregar al Carrito
+          </button>
+        </form>
+      <% } else if (!isLogged && product.estado === 'DISPONIBLE') { %>
+        <a href="/login" class="btn btn-outline btn-full">
+          <i data-lucide="log-in" style="width:16px;height:16px"></i> Inicia sesión para comprar
+        </a>
+      <% } %>
 
       <div class="detail-stock">
         <span class="stock-label"><i data-lucide="box" style="width:14px;height:14px"></i> Stock disponible:</span>
@@ -103,5 +126,23 @@
     </div>
   </div>
 </div>
+
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()"><i data-lucide="x" style="width:24px;height:24px"></i></button>
+  <img id="lightboxImg" src="" alt="Vista ampliada">
+</div>
+
+<script>
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+</script>
 
 <%- include('../layouts/footer') %>

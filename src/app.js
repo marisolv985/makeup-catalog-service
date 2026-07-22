@@ -11,9 +11,12 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./docs/swagger');
 const errorHandler = require('./middlewares/errorHandler');
 const requestLogger = require('./middlewares/requestLogger');
+const handleMulterErrors = require('./middlewares/handleMulterErrors');
 const cosmeticsRoutes = require('./routes/cosmeticsRoutes');
 const viewRoutes = require('./routes/views/viewRoutes');
+const orderViewRoutes = require('./routes/views/orderViewRoutes');
 const authRoutes = require('./routes/authRoutes');
+const { JWT_SECRET, CORS_ORIGIN } = require('./config/constants');
 
 const app = express();
 
@@ -21,7 +24,10 @@ app.use(helmet({
   contentSecurityPolicy: false,
   crossOriginEmbedderPolicy: false,
 }));
-app.use(cors());
+app.use(cors({
+  origin: CORS_ORIGIN,
+  credentials: true,
+}));
 app.use(compression());
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -33,8 +39,6 @@ app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
 app.use(cookieParser());
-
-const JWT_SECRET = process.env.JWT_SECRET || 'glowflow_catalog_secret_key_change_in_production';
 
 app.use((req, res, next) => {
   req.user = null;
@@ -80,7 +84,10 @@ app.get('/health', async (_req, res) => {
 app.use('/api/v1/cosmetics', cosmeticsRoutes);
 
 app.use('/', authRoutes);
+app.use('/', orderViewRoutes);
 app.use('/', viewRoutes);
+
+app.use(handleMulterErrors);
 
 app.use((_req, res) => {
   res.status(404).render('errors/404', {

@@ -1,0 +1,273 @@
+<%- include('../layouts/header') %>
+
+<section class="page-header">
+  <div class="page-header-content">
+    <div>
+      <a href="/products" class="back-link"><i data-lucide="arrow-left" style="width:16px;height:16px"></i> Seguir comprando</a>
+      <h1><i data-lucide="shopping-cart" style="width:28px;height:28px"></i> Mi Carrito</h1>
+    </div>
+  </div>
+</section>
+
+<% if (successMessage) { %>
+  <div class="alert alert-success"><i data-lucide="check-circle" style="width:18px;height:18px"></i> <%= successMessage %></div>
+<% } %>
+<% if (errorMessage) { %>
+  <div class="alert alert-danger"><i data-lucide="alert-circle" style="width:18px;height:18px"></i> <%= errorMessage %></div>
+<% } %>
+
+<% if (!cart || !cart.items || cart.items.length === 0) { %>
+  <div class="empty-state">
+    <i data-lucide="shopping-cart" style="width:64px;height:64px;opacity:0.3"></i>
+    <h2>Tu carrito está vacío</h2>
+    <p>Agrega productos del catálogo para comenzar tu compra</p>
+    <a href="/products" class="btn btn-primary"><i data-lucide="package" style="width:16px;height:16px"></i> Ver Catálogo</a>
+  </div>
+<% } else { %>
+  <div class="cart-container">
+    <div class="cart-items">
+      <h2 class="cart-section-title"><i data-lucide="shopping-bag" style="width:20px;height:20px"></i> Productos</h2>
+      <% cart.items.forEach(function(item) { %>
+        <div class="cart-item">
+          <div class="cart-item-image">
+            <% if (item.imagenUrl) { %>
+              <img src="<%= item.imagenUrl %>" alt="<%= item.nombreProducto %>" onerror="this.src='/images/placeholder.svg'">
+            <% } else { %>
+              <div class="product-image-placeholder"><i data-lucide="image" style="width:32px;height:32px;opacity:0.3"></i></div>
+            <% } %>
+          </div>
+          <div class="cart-item-info">
+            <h3><%= item.nombreProducto %></h3>
+            <p class="cart-item-sku">SKU: <%= item.productoSku %></p>
+            <p class="cart-item-price">$<%= Number(item.precioUnitario).toFixed(2) %> c/u</p>
+          </div>
+          <div class="cart-item-actions">
+            <% if (item.cantidad > 1) { %>
+              <form action="/cart/update" method="POST" class="cart-qty-form">
+                <input type="hidden" name="sku" value="<%= item.productoSku %>">
+                <button type="submit" name="cantidad" value="<%= item.cantidad - 1 %>" class="qty-btn"><i data-lucide="minus" style="width:14px;height:14px"></i></button>
+                <span class="qty-value"><%= item.cantidad %></span>
+                <button type="submit" name="cantidad" value="<%= item.cantidad + 1 %>" class="qty-btn"><i data-lucide="plus" style="width:14px;height:14px"></i></button>
+              </form>
+            <% } else { %>
+              <div class="cart-qty-form">
+                <form action="/cart/remove" method="POST" style="display:inline">
+                  <input type="hidden" name="sku" value="<%= item.productoSku %>">
+                  <button type="submit" class="qty-btn qty-btn-remove" title="Eliminar producto"><i data-lucide="minus" style="width:14px;height:14px"></i></button>
+                </form>
+                <span class="qty-value"><%= item.cantidad %></span>
+                <form action="/cart/update" method="POST" style="display:inline">
+                  <input type="hidden" name="sku" value="<%= item.productoSku %>">
+                  <input type="hidden" name="cantidad" value="2">
+                  <button type="submit" class="qty-btn"><i data-lucide="plus" style="width:14px;height:14px"></i></button>
+                </form>
+              </div>
+            <% } %>
+            <p class="cart-item-subtotal">$<%= (Number(item.precioUnitario) * item.cantidad).toFixed(2) %></p>
+            <form action="/cart/remove" method="POST" class="cart-item-remove">
+              <input type="hidden" name="sku" value="<%= item.productoSku %>">
+              <button type="submit" class="btn-icon btn-danger-icon" title="Eliminar"><i data-lucide="trash-2" style="width:16px;height:16px"></i></button>
+            </form>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <div class="cart-sidebar">
+      <form action="/cart/checkout" method="POST" class="checkout-form" id="checkoutForm">
+        <div class="checkout-section">
+          <div class="checkout-section-header">
+            <i data-lucide="user" style="width:18px;height:18px"></i>
+            <h3>Datos de Contacto</h3>
+          </div>
+          <div class="form-group">
+            <label for="nombreCompleto">Nombre completo</label>
+            <input type="text" id="nombreCompleto" name="nombreCompleto" placeholder="Tu nombre y apellido" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="telefono">Teléfono</label>
+              <input type="tel" id="telefono" name="telefono" placeholder="+52 55 1234 5678" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Correo electrónico</label>
+              <input type="email" id="email" name="email" value="<%= typeof user !== 'undefined' && user ? user.email || '' : '' %>" readonly>
+            </div>
+          </div>
+        </div>
+
+        <div class="checkout-section">
+          <div class="checkout-section-header">
+            <i data-lucide="map-pin" style="width:18px;height:18px"></i>
+            <h3>Dirección de Envío</h3>
+          </div>
+          <div class="form-group">
+            <label for="direccionEnvio">Calle y número</label>
+            <input type="text" id="direccionEnvio" name="direccionEnvio" placeholder="Calle 123 #45-67, Apto 8B" required>
+          </div>
+          <div class="form-group">
+            <label for="colonia">Colonia / Barrio</label>
+            <input type="text" id="colonia" name="colonia" placeholder="Chapinero, Centro..." required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="ciudad">Ciudad</label>
+              <select id="ciudad" name="ciudad" required>
+                <option value="">Selecciona tu ciudad</option>
+                <option value="CDMX">Ciudad de México</option>
+                <option value="Guadalajara">Guadalajara</option>
+                <option value="Monterrey">Monterrey</option>
+                <option value="Puebla">Puebla</option>
+                <option value="Querétaro">Querétaro</option>
+                <option value="Mérida">Mérida</option>
+                <option value="Tijuana">Tijuana</option>
+                <option value="León">León</option>
+                <option value="Cancún">Cancún</option>
+                <option value="Toluca">Toluca</option>
+                <option value="San Luis Potosí">San Luis Potosí</option>
+                <option value="Veracruz">Veracruz</option>
+                <option value="Otra">Otra ciudad</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="codigoPostal">Código Postal</label>
+              <input type="text" id="codigoPostal" name="codigoPostal" placeholder="110111" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="pais">País</label>
+            <input type="text" id="pais" name="pais" value="México" readonly>
+          </div>
+        </div>
+
+        <div class="checkout-section">
+          <div class="checkout-section-header">
+            <i data-lucide="credit-card" style="width:18px;height:18px"></i>
+            <h3>Método de Pago</h3>
+          </div>
+          <div class="payment-methods">
+            <label class="payment-option">
+              <input type="radio" name="metodoPago" value="tarjeta_credito" checked onchange="toggleCardFields()">
+              <div class="payment-option-content">
+                <i data-lucide="credit-card" style="width:20px;height:20px;color:#3B82F6"></i>
+                <div>
+                  <strong>Tarjeta de Crédito</strong>
+                  <span>Visa, Mastercard, American Express</span>
+                </div>
+              </div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="metodoPago" value="tarjeta_debito" onchange="toggleCardFields()">
+              <div class="payment-option-content">
+                <i data-lucide="landmark" style="width:20px;height:20px;color:#22C55E"></i>
+                <div>
+                  <strong>Tarjeta de Débito</strong>
+                  <span>Débito bancario</span>
+                </div>
+              </div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="metodoPago" value="transferencia" onchange="toggleCardFields()">
+              <div class="payment-option-content">
+                <i data-lucide="banknote" style="width:20px;height:20px;color:#F59E0B"></i>
+                <div>
+                  <strong>Transferencia Bancaria</strong>
+                  <span>PSE, Nequi, Daviplata</span>
+                </div>
+              </div>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="metodoPago" value="contraentrega" onchange="toggleCardFields()">
+              <div class="payment-option-content">
+                <i data-lucide="wallet" style="width:20px;height:20px;color:#7C3AED"></i>
+                <div>
+                  <strong>Contra Entrega</strong>
+                  <span>Paga al recibir tu pedido</span>
+                </div>
+              </div>
+            </label>
+          </div>
+          <div class="card-fields" id="cardFields">
+            <div class="form-group">
+              <label for="numeroTarjeta">Número de Tarjeta</label>
+              <div class="input-with-icon">
+                <i data-lucide="credit-card" style="width:18px;height:18px;color:var(--gray-400)"></i>
+                <input type="text" id="numeroTarjeta" name="numeroTarjeta" placeholder="1234 5678 9012 3456" maxlength="19">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="fechaExpiracion">Fecha de Expiración</label>
+                <input type="text" id="fechaExpiracion" name="fechaExpiracion" placeholder="MM/YY" maxlength="5">
+              </div>
+              <div class="form-group">
+                <label for="cvv">CVV</label>
+                <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="nombreTarjeta">Nombre en la Tarjeta</label>
+              <input type="text" id="nombreTarjeta" name="nombreTarjeta" placeholder="Como aparece en la tarjeta">
+            </div>
+          </div>
+        </div>
+
+        <div class="checkout-section">
+          <div class="checkout-section-header">
+            <i data-lucide="message-square" style="width:18px;height:18px"></i>
+            <h3>Notas del Pedido</h3>
+          </div>
+          <div class="form-group">
+            <textarea id="notas" name="notas" rows="2" placeholder="Instrucciones especiales de entrega, referencias, horario preferido..."></textarea>
+          </div>
+        </div>
+
+        <div class="checkout-section checkout-totals">
+          <div class="cart-summary-row">
+            <span>Productos (<%= cart.items.reduce((a, i) => a + i.cantidad, 0) %>)</span>
+            <span>$<%= (cart.total || cart.items.reduce((a, i) => a + Number(i.precioUnitario) * i.cantidad, 0)).toFixed(2) %></span>
+          </div>
+          <div class="cart-summary-row">
+            <span>Envío</span>
+            <span style="color:var(--success);font-weight:600">GRATIS</span>
+          </div>
+          <div class="cart-summary-row cart-summary-total">
+            <span>Total a Pagar</span>
+            <span>$<%= (cart.total || cart.items.reduce((a, i) => a + Number(i.precioUnitario) * i.cantidad, 0)).toFixed(2) %></span>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full btn-xl">
+            <i data-lucide="lock" style="width:18px;height:18px"></i> Confirmar y Pagar
+          </button>
+          <p class="checkout-secure">
+            <i data-lucide="shield-check" style="width:14px;height:14px"></i> Pago 100% seguro. Tus datos están protegidos.
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+<% } %>
+
+<script>
+function toggleCardFields() {
+  var metodo = document.querySelector('input[name="metodoPago"]:checked').value;
+  var cardFields = document.getElementById('cardFields');
+  if (metodo === 'tarjeta_credito' || metodo === 'tarjeta_debito') {
+    cardFields.style.display = 'block';
+  } else {
+    cardFields.style.display = 'none';
+  }
+}
+toggleCardFields();
+
+document.getElementById('numeroTarjeta').addEventListener('input', function(e) {
+  var val = e.target.value.replace(/\s/g, '').replace(/(\d{4})(?=\d)/g, '$1 ');
+  e.target.value = val;
+});
+document.getElementById('fechaExpiracion').addEventListener('input', function(e) {
+  var val = e.target.value.replace(/\D/g, '');
+  if (val.length >= 3) val = val.slice(0,2) + '/' + val.slice(2,4);
+  e.target.value = val;
+});
+</script>
+
+<%- include('../layouts/footer') %>

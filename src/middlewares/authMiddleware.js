@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
-
-const JWT_SECRET = process.env.JWT_SECRET || 'glowflow_catalog_secret_key_change_in_production';
+const { JWT_SECRET } = require('../config/constants');
 
 const authMiddleware = (req, res, next) => {
   let token = null;
@@ -50,4 +49,31 @@ const adminOnly = (req, res, next) => {
   next();
 };
 
-module.exports = { authMiddleware, adminOnly };
+const requireAuth = (req, res, next) => {
+  if (!req.user) {
+    return res.redirect('/login');
+  }
+  next();
+};
+
+const requireAdmin = (req, res, next) => {
+  if (!req.user) {
+    return res.redirect('/login');
+  }
+  if (req.user.rol !== 'ADMIN') {
+    return res.redirect('/products?error=Acceso denegado. Se requiere rol de administrador');
+  }
+  next();
+};
+
+const requireEditorOrAbove = (req, res, next) => {
+  if (!req.user) {
+    return res.redirect('/login');
+  }
+  if (!['ADMIN', 'EDITOR'].includes(req.user.rol)) {
+    return res.redirect('/products?error=Acceso denegado. Se requiere rol de editor o administrador');
+  }
+  next();
+};
+
+module.exports = { authMiddleware, adminOnly, requireAuth, requireAdmin, requireEditorOrAbove };
