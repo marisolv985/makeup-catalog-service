@@ -3039,6 +3039,71 @@ h1, h2, h3, h4, h5, h6 {
 .back-to-top i[data-lucide] { width: 20px; height: 20px; }
 
 /* ============================================
+   MODAL
+   ============================================ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s var(--ease);
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal-card {
+  background: var(--surface);
+  border-radius: var(--radius-xl);
+  padding: var(--sp-10);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow: var(--shadow-xl);
+  animation: modalSlideIn 0.3s var(--ease);
+}
+
+.modal-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--danger-light);
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--sp-5);
+}
+
+.modal-card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: var(--sp-2);
+}
+
+.modal-card p {
+  font-size: 0.9rem;
+  color: var(--gray-500);
+  margin-bottom: var(--sp-6);
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--sp-3);
+  justify-content: center;
+}
+
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============================================
    TRUST BAR
    ============================================ */
 
@@ -3845,6 +3910,10 @@ body.dark .tracking-line { background: var(--gray-800); }
 body.dark .tracking-step.completed .tracking-line { background: var(--success); }
 body.dark .tracking-step.active .tracking-line { background: var(--primary); }
 body.dark .btn-xs { background: var(--gray-800); border-color: var(--border); color: var(--gray-400); }
+
+body.dark .modal-card { background: var(--surface); }
+body.dark .modal-card h3 { color: var(--gray-800); }
+body.dark .modal-overlay { background: rgba(0,0,0,0.7); }
 
 body.dark .orders-table-wrapper { background: var(--surface); border-color: var(--border); }
 body.dark .orders-table th { background: var(--gray-800); color: var(--gray-400); border-color: var(--border); }

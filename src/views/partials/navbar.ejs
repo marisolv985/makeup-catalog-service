@@ -43,7 +43,7 @@
           <i data-lucide="circle-user"></i>
           <%= user.username %>
         </span>
-        <a href="#" class="navbar-logout" onclick="if(confirm('¿Cerrar sesión?'))window.location.href='/logout'">
+        <a href="/logout" class="navbar-logout" id="logoutLink">
           <i data-lucide="log-out"></i> Salir
         </a>
       <% } else { %>

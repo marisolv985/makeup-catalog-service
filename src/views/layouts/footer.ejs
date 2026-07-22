@@ -7,6 +7,18 @@
     <i data-lucide="chevron-up" style="width:20px;height:20px"></i>
   </button>
 
+  <div class="modal-overlay" id="logoutModal">
+    <div class="modal-card">
+      <div class="modal-icon"><i data-lucide="log-out" style="width:28px;height:28px"></i></div>
+      <h3>Cerrar Sesión</h3>
+      <p>¿Estás segura de que deseas salir de tu cuenta?</p>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+        <a href="/logout" class="btn btn-danger">Cerrar Sesión</a>
+      </div>
+    </div>
+  </div>
+
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
   <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
   <script src="/js/app.js"></script>
@@ -14,6 +26,16 @@
     lucide.createIcons();
 
     if (typeof AOS !== 'undefined') AOS.init({ once: true, duration: 600 });
+
+    (function() {
+      var link = document.getElementById('logoutLink');
+      var modal = document.getElementById('logoutModal');
+      if (link) {
+        link.addEventListener('click', function(e) { e.preventDefault(); modal.classList.add('open'); });
+      }
+      modal.addEventListener('click', function(e) { if (e.target === modal) modal.classList.remove('open'); });
+      window.closeModal = function() { modal.classList.remove('open'); };
+    })();
 
     var darkMode = localStorage.getItem('gf_darkMode') === 'true';
     if (darkMode) document.body.classList.add('dark');
