@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Review {
+  id            Int      @id @default(autoincrement())
+  usuarioId     String
+  username      String   @default("")
+  productoSku   String
+  rating        Int
+  comment       String?
+  imagenes      Json     @default("[]")
+  fechaCreacion DateTime @default(now())
+
+  @@index([productoSku])
+  @@index([usuarioId])
+}
+
+model RestockAlert {
+  id            Int      @id @default(autoincrement())
+  usuarioId     String
+  productoSku   String
+  email         String
+  activo        Boolean  @default(true)
+  fechaCreacion DateTime @default(now())
+
+  @@index([productoSku])
+  @@index([usuarioId])
+}

@@ -4,6 +4,7 @@ const upload = require('../../config/upload');
 const { requireAuth, requireAdmin } = require('../../middlewares/authMiddleware');
 const { escapeRegex } = require('../../utils/helpers');
 const { deleteUploadedImages } = require('../../utils/fileCleanup');
+const reviewClient = require('../../utils/reviewClient');
 const User = require('../../models/User');
 
 const router = Router();
@@ -156,10 +157,15 @@ router.get('/products/:id', async (req, res) => {
     if (!product) {
       return res.redirect('/products?error=Producto no encontrado');
     }
+    var reviewData = { reviews: [], stats: { promedio: 0, total: 0 } };
+    try {
+      reviewData = await reviewClient.getReviews(product.sku);
+    } catch (e) { /* silently ignore review errors */ }
     res.render('pages/productDetail', {
       title: product.titulo,
       currentPath: '/products',
       product,
+      reviewData,
       breadcrumbs: [{ label: 'Inicio', href: '/' }, { label: 'Productos', href: '/products' }, { label: product.titulo }],
       successMessage: req.query.success || null,
       errorMessage: req.query.error || null,
@@ -279,6 +285,35 @@ router.post('/products/:id/delete', requireAdmin, async (req, res) => {
     res.redirect('/products?success=Producto eliminado exitosamente');
   } catch (error) {
     res.redirect('/products?error=Error al eliminar el producto');
+  }
+});
+
+router.post('/products/:id/review', requireAuth, upload.array('reviewImages', 5), async (req, res) => {
+  try {
+    const { rating, comment } = req.body;
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.redirect('/products?error=Producto no encontrado');
+    var imagenes = [];
+    if (req.files && req.files.length > 0) {
+      imagenes = req.files.map(function(f) { return '/uploads/' + f.filename; });
+    }
+    await reviewClient.createReview(req.user, product.sku, parseInt(rating), comment, imagenes);
+    res.redirect(`/products/${req.params.id}?success=Reseña publicada`);
+  } catch (error) {
+    const msg = error.response?.data?.message || 'Error al publicar reseña';
+    res.redirect(`/products/${req.params.id}?error=${encodeURIComponent(msg)}`);
+  }
+});
+
+router.post('/products/:id/alert', requireAuth, async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.redirect('/products?error=Producto no encontrado');
+    await reviewClient.subscribeAlert(req.user, product.sku);
+    res.redirect(`/products/${req.params.id}?success=Te avisaremos cuando vuelva el stock`);
+  } catch (error) {
+    const msg = error.response?.data?.message || 'Error al suscribirse';
+    res.redirect(`/products/${req.params.id}?error=${encodeURIComponent(msg)}`);
   }
 });
 

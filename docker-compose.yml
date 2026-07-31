@@ -35,6 +35,25 @@ services:
       timeout: 5s
       retries: 5
 
+  review-db:
+    image: postgres:16-alpine
+    container_name: glowflow-review-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: glowflow_review_db
+      POSTGRES_USER: review_user
+      POSTGRES_PASSWORD: review_pass
+    volumes:
+      - review-pg-data:/var/lib/postgresql/data
+    networks:
+      - glowflow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U review_user -d glowflow_review_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   consul:
     image: consul:1.15
     container_name: glowflow-consul
@@ -65,6 +84,7 @@ services:
       CONSUL_URL: http://consul:8500
       SERVICE_NAME: makeup-catalog-service
       ORDERS_SERVICE_URL: http://orders-service:3002
+      REVIEW_SERVICE_URL: http://review-service:3004
     depends_on:
       mongodb:
         condition: service_healthy
@@ -102,10 +122,51 @@ services:
       - glowflow-network
     restart: unless-stopped
 
+  review-service:
+    build:
+      context: ./review
+      dockerfile: Dockerfile
+    container_name: glowflow-review-service
+    ports:
+      - "3012:3004"
+    environment:
+      PORT: 3004
+      DATABASE_URL: postgresql://review_user:review_pass@review-db:5432/glowflow_review_db
+      JWT_SECRET: glowflow_catalog_secret_key_change_in_production
+      NODE_ENV: production
+      CONSUL_URL: http://consul:8500
+      SERVICE_NAME: review-service
+      CATALOG_SERVICE_NAME: makeup-catalog-service
+      CATALOG_FALLBACK_URL: http://makeup-catalog-service:3001
+      CORS_ORIGIN: "*"
+    depends_on:
+      review-db:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    networks:
+      - glowflow-network
+    restart: unless-stopped
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    container_name: glowflow-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+    networks:
+      - glowflow-network
+    restart: unless-stopped
+
 volumes:
   catalog-mongo-data:
   catalog-uploads:
   orders-pg-data:
+  review-pg-data:
 
 networks:
   glowflow-network:

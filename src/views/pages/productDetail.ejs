@@ -3,6 +3,7 @@
 
 <% const isAdmin = typeof user !== 'undefined' && user && user.rol === 'ADMIN'; %>
 <% const isLogged = typeof user !== 'undefined' && user; %>
+<% var rd = (typeof reviewData !== 'undefined' && reviewData) ? reviewData : { reviews: [], stats: { promedio: 0, total: 0 } }; %>
 
 <section class="page-header">
   <div class="page-header-content">
@@ -28,102 +29,144 @@
         <% if (product.imagenes.length > 1) { %>
           <div class="image-thumbnails">
             <% product.imagenes.forEach(function(img) { %>
-              <img src="<%= img %>" alt="Thumbnail" class="thumbnail" onclick="changeMainImage(this.src)" onerror="this.style.display='none'">
+              <img src="<%= img %>" alt="Thumbnail" class="thumbnail" onclick="event.stopPropagation();changeMainImage(this.src)">
             <% }); %>
           </div>
         <% } %>
       <% } else { %>
         <div class="main-image">
-          <div class="product-image-placeholder large">
-            <i data-lucide="image" style="width:64px;height:64px;opacity:0.3"></i>
-            <p>Sin imagen</p>
-          </div>
+          <div class="product-image-placeholder large"><i data-lucide="image" style="width:64px;height:64px;opacity:0.3"></i><p>Sin imagen</p></div>
         </div>
       <% } %>
     </div>
 
     <div class="product-detail-info">
-      <div class="detail-header">
-        <span class="product-status status-<%= product.estado.toLowerCase() %>"><%= product.estado %></span>
-        <span class="product-category-badge"><%= product.categoria %></span>
+      <div class="detail-badges">
+        <span class="badge <%= product.estado === 'DISPONIBLE' ? 'badge-success' : product.estado === 'INACTIVO' ? 'badge-danger' : 'badge-warning' %>"><%= product.estado %></span>
+        <span class="badge badge-info"><%= product.categoria %></span>
+        <% if (rd.stats.total > 0) { %><span class="badge badge-warning"><i data-lucide="star" style="width:11px;height:11px;fill:currentColor"></i> <%= Number(rd.stats.promedio).toFixed(1) %></span><% } %>
       </div>
 
-      <h2 class="detail-title"><%= product.titulo %></h2>
-      <p class="detail-brand"><i data-lucide="tag" style="width:14px;height:14px"></i> Marca: <strong><%= product.marca %></strong></p>
-      <p class="detail-sku"><i data-lucide="hash" style="width:14px;height:14px"></i> SKU: <code><%= product.sku %></code></p>
+      <p class="detail-brand"><%= product.marca %></p>
+      <p class="detail-sku">SKU: <%= product.sku %></p>
+      <div class="detail-price">$<%= Number(product.precio).toLocaleString('es-MX', {minimumFractionDigits:2}) %></div>
 
-      <div class="detail-price">$<%= product.precio.toFixed(2) %></div>
+      <div class="detail-stock-bar">
+        <div class="stock-info"><i data-lucide="package"></i> <%= product.stockDisponible %> en stock</div>
+        <div class="stock-progress">
+          <div class="stock-fill <%= product.stockDisponible <= 0 ? 'empty' : product.stockDisponible <= 10 ? 'low' : '' %>" style="width:<%= Math.min(100, product.stockDisponible * 2) %>%"></div>
+        </div>
+      </div>
 
       <% if (isLogged && product.estado === 'DISPONIBLE' && product.stockDisponible > 0) { %>
         <form action="/cart/add" method="POST" class="add-to-cart-form">
           <input type="hidden" name="productoSku" value="<%= product.sku %>">
           <div class="qty-selector">
-            <label><i data-lucide="shopping-bag" style="width:14px;height:14px"></i> Cantidad:</label>
+            <label>Cantidad:</label>
             <input type="number" name="cantidad" value="1" min="1" max="<%= product.stockDisponible %>" class="qty-input">
           </div>
-          <button type="submit" class="btn btn-primary btn-full">
-            <i data-lucide="cart-plus" style="width:16px;height:16px"></i> Agregar al Carrito
-          </button>
+          <button type="submit" class="btn btn-primary btn-full btn-xl"><i data-lucide="shopping-cart" style="width:18px;height:18px"></i> Agregar al Carrito</button>
         </form>
-      <% } else if (!isLogged && product.estado === 'DISPONIBLE') { %>
-        <a href="/login" class="btn btn-outline btn-full">
-          <i data-lucide="log-in" style="width:16px;height:16px"></i> Inicia sesión para comprar
-        </a>
+      <% } else if (isLogged && product.stockDisponible <= 0) { %>
+        <form action="/products/<%= product._id %>/alert" method="POST">
+          <button type="submit" class="btn btn-warning btn-xl" style="width:100%"><i data-lucide="bell" style="width:18px;height:18px"></i> Avísame cuando vuelva</button>
+        </form>
+      <% } else if (!isLogged) { %>
+        <a href="/login" class="btn btn-outline btn-full"><i data-lucide="log-in" style="width:16px;height:16px"></i> Inicia sesión para comprar</a>
       <% } %>
 
-      <div class="detail-stock">
-        <span class="stock-label"><i data-lucide="box" style="width:14px;height:14px"></i> Stock disponible:</span>
-        <span class="stock-value <%= product.stockDisponible === 0 ? 'stock-empty' : '' %>">
-          <%= product.stockDisponible %> unidades
-        </span>
+      <div class="detail-tabs">
+        <div class="detail-tab active" onclick="switchTab(this,'desc')">Descripción</div>
+        <div class="detail-tab" onclick="switchTab(this,'details')">Detalles</div>
       </div>
 
-      <div class="detail-description">
-        <h3>Descripción</h3>
-        <p><%= product.descripcion %></p>
+      <div class="detail-pane active" id="pane-desc">
+        <p class="detail-desc"><%= product.descripcion || 'Sin descripción' %></p>
       </div>
-
-      <% if (product.tipoPielRecomendado && product.tipoPielRecomendado.length > 0) { %>
-        <div class="detail-section">
-          <h3>Tipo de Piel Recomendado</h3>
-          <div class="tags">
-            <% product.tipoPielRecomendado.forEach(function(tipo) { %>
-              <span class="tag"><%= tipo %></span>
-            <% }); %>
-          </div>
-        </div>
-      <% } %>
-
-      <% if (product.tono) { %>
-        <div class="detail-section">
-          <h3>Tono</h3>
-          <p><%= product.tono %></p>
-        </div>
-      <% } %>
-
-      <% if (product.peso) { %>
-        <div class="detail-section">
-          <h3>Peso</h3>
-          <p><%= product.peso %></p>
-        </div>
-      <% } %>
-
-      <% if (product.ingredientes && product.ingredientes.length > 0) { %>
-        <div class="detail-section">
-          <h3>Ingredientes</h3>
-          <ul class="ingredients-list">
-            <% product.ingredientes.forEach(function(ing) { %>
-              <li><%= ing %></li>
-            <% }); %>
-          </ul>
-        </div>
-      <% } %>
-
-      <div class="detail-meta">
-        <p><i data-lucide="calendar" style="width:12px;height:12px"></i> Creado: <%= new Date(product.fechaCreacion).toLocaleDateString('es-MX') %></p>
-        <p><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Actualizado: <%= new Date(product.fechaActualizacion).toLocaleDateString('es-MX') %></p>
+      <div class="detail-pane" id="pane-details">
+        <% if (product.marca) { %><div class="detail-row"><span>Marca</span><strong><%= product.marca %></strong></div><% } %>
+        <% if (product.categoria) { %><div class="detail-row"><span>Categoría</span><strong><%= product.categoria %></strong></div><% } %>
+        <% if (product.tono) { %><div class="detail-row"><span>Tono</span><strong><%= product.tono %></strong></div><% } %>
+        <% if (product.peso) { %><div class="detail-row"><span>Peso</span><strong><%= product.peso %></strong></div><% } %>
+        <% if (product.tipoPielRecomendado && product.tipoPielRecomendado.length > 0) { %><div class="detail-row"><span>Piel</span><strong><%= product.tipoPielRecomendado.join(', ') %></strong></div><% } %>
+        <div class="detail-row"><span>SKU</span><strong><%= product.sku %></strong></div>
       </div>
     </div>
+  </div>
+
+  <div class="product-reviews">
+    <div class="reviews-header">
+      <h2><i data-lucide="message-square-text" style="width:22px;height:22px"></i> Reseñas de Clientes</h2>
+      <div class="reviews-summary">
+        <div class="reviews-score-big"><%= Number(rd.stats.promedio || 0).toFixed(1) %></div>
+        <div>
+          <div class="reviews-stars-row">
+            <% for (var i = 0; i < 5; i++) { %>
+              <span class="star <%= i < Math.round(rd.stats.promedio || 0) ? 'filled' : '' %>">★</span>
+            <% } %>
+          </div>
+          <span class="reviews-count-text"><%= rd.stats.total || 0 %> reseñas</span>
+        </div>
+      </div>
+    </div>
+
+    <% if (typeof user !== 'undefined' && user) { %>
+      <form action="/products/<%= product._id %>/review" method="POST" enctype="multipart/form-data" class="review-form">
+        <div class="review-rating stars-row">
+          <span class="review-rating-label">Tu puntuación:</span>
+          <div class="stars-input">
+            <% for (var r = 5; r >= 1; r--) { %>
+              <input type="radio" id="rst<%= r %>" name="rating" value="<%= r %>" <%= r === 5 ? 'checked' : '' %>>
+              <label for="rst<%= r %>">★</label>
+            <% } %>
+          </div>
+        </div>
+        <textarea name="comment" rows="3" placeholder="Cuéntanos tu experiencia con este producto..."></textarea>
+        <div class="review-form-bottom">
+          <label class="review-upload-btn">
+            <i data-lucide="camera" style="width:16px;height:16px"></i> Agregar fotos
+            <input type="file" name="reviewImages" accept="image/*" multiple onchange="previewReviewImages(this)">
+          </label>
+          <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="send" style="width:14px;height:14px"></i> Publicar</button>
+        </div>
+        <div class="review-images-preview" id="reviewPreviews"></div>
+      </form>
+    <% } else { %>
+      <p class="review-login-hint"><i data-lucide="log-in" style="width:14px;height:14px"></i> <a href="/login">Inicia sesión</a> para dejar una reseña</p>
+    <% } %>
+
+    <% if (rd.reviews && rd.reviews.length > 0) { %>
+      <div class="reviews-list">
+        <% rd.reviews.forEach(function(rv) { %>
+          <div class="review-card">
+            <div class="review-card-top">
+              <div class="review-user">
+                <div class="review-avatar"><%= (rv.username || rv.usuarioId || '?').charAt(0).toUpperCase() %></div>
+                <div>
+                  <strong><%= rv.username || (rv.usuarioId ? rv.usuarioId.substring(0,8) : 'Anónimo') %></strong>
+                  <span class="review-date"><%= new Date(rv.fechaCreacion).toLocaleDateString('es-MX', {month:'short',day:'numeric',year:'numeric'}) %></span>
+                </div>
+              </div>
+              <div class="review-stars-inline">
+                <% for (var s = 0; s < 5; s++) { %>
+                  <span class="star <%= s < (rv.rating || 0) ? 'filled' : '' %>">★</span>
+                <% } %>
+              </div>
+            </div>
+            <% if (rv.comment) { %><p class="review-comment"><%= rv.comment %></p><% } %>
+            <% if (rv.imagenes && rv.imagenes.length > 0) { %>
+              <div class="review-images">
+                <% rv.imagenes.forEach(function(img) { %>
+                  <img src="<%= img %>" alt="Foto" onclick="openLightbox(this.src)" class="review-thumb">
+                <% }); %>
+              </div>
+            <% } %>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <p class="review-empty"><i data-lucide="sparkles" style="width:16px;height:16px"></i> Sé la primera en dejar una reseña</p>
+    <% } %>
   </div>
 </div>
 
@@ -133,16 +176,12 @@
 </div>
 
 <script>
-function openLightbox(src) {
-  document.getElementById('lightboxImg').src = src;
-  document.getElementById('lightbox').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function closeLightbox() {
-  document.getElementById('lightbox').classList.remove('open');
-  document.body.style.overflow = '';
-}
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+function openLightbox(src){document.getElementById('lightboxImg').src=src;document.getElementById('lightbox').classList.add('open');document.body.style.overflow='hidden';}
+function closeLightbox(){document.getElementById('lightbox').classList.remove('open');document.body.style.overflow='';}
+function changeMainImage(src){document.querySelector('.main-image img').src=src;}
+function previewReviewImages(input){var c=document.getElementById('reviewPreviews');c.innerHTML='';if(!input.files)return;Array.from(input.files).forEach(function(f){var r=new FileReader();r.onload=function(e){var i=document.createElement('img');i.src=e.target.result;i.className='review-preview-thumb';c.appendChild(i)};r.readAsDataURL(f)})}
+function switchTab(el,pane){document.querySelectorAll('.detail-tab').forEach(function(t){t.classList.remove('active')});el.classList.add('active');document.querySelectorAll('.detail-pane').forEach(function(p){p.classList.remove('active')});document.getElementById('pane-'+pane).classList.add('active')}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLightbox()});
 </script>
 
 <%- include('../layouts/footer') %>
