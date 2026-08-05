@@ -135,3 +135,30 @@ Importa `postman/glowflow-collection.json` para probar todos los endpoints.
 | `v1.2.0` | Multi-stage builds, Postman collection, tests |
 | `v1.1.0` | UI redesign, checkout, orders, monorepo |
 | `v1.0.0` | Catálogo CRUD, RBAC, Lucide Icons |
+
+
+## Despliegue en Producción (Cloud)
+
+El sistema está desplegado en **Railway** (railway.com), con los 4 microservicios y sus 3 bases de datos corriendo como contenedores independientes, cada base de datos con su propio volumen persistente.
+
+### URLs públicas
+
+- **API Gateway (punto de entrada):** https://thriving-joy-production-621c.up.railway.app
+- **Catálogo:** https://makeup-catalog-service-production.up.railway.app
+
+Ambas URLs cuentan con certificado SSL/TLS válido y HTTPS forzado automáticamente por Railway.
+
+### Evidencia de funcionamiento
+
+```bash
+curl https://thriving-joy-production-621c.up.railway.app/health
+# {"status":"UP","service":"api-gateway","timestamp":"2026-08-05T18:51:57.482Z"}
+
+curl https://makeup-catalog-service-production.up.railway.app/health
+# {"status":"UP","service":"makeup-catalog-service","database":{"mongodb":"UP"},...}
+```
+
+### Pendientes
+
+- **Balanceador de carga:** activar réplicas horizontales en el Gateway (funcionalidad nativa de Railway, aún no configurada).
+- **Dominio personalizado:** se intentó con DuckDNS, FreeDNS y Dynu, pero no fue posible completar la propagación de los registros CNAME/TXT requeridos por Railway dentro del tiempo disponible.
