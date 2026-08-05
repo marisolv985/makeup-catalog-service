@@ -16,6 +16,25 @@ services:
       timeout: 5s
       retries: 5
 
+  orders-db:
+    image: postgres:16-alpine
+    container_name: glowflow-orders-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: glowflow_orders_db
+      POSTGRES_USER: orders_user
+      POSTGRES_PASSWORD: orders_pass
+    volumes:
+      - orders-pg-data:/var/lib/postgresql/data
+    networks:
+      - glowflow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orders_user -d glowflow_orders_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   consul:
     image: consul:1.15
     container_name: glowflow-consul
@@ -45,6 +64,7 @@ services:
       NODE_ENV: production
       CONSUL_URL: http://consul:8500
       SERVICE_NAME: makeup-catalog-service
+      ORDERS_SERVICE_URL: http://orders-service:3002
     depends_on:
       mongodb:
         condition: service_healthy
@@ -56,9 +76,36 @@ services:
     volumes:
       - catalog-uploads:/app/public/uploads
 
+  orders-service:
+    build:
+      context: ./orders
+      dockerfile: Dockerfile
+    container_name: glowflow-orders-service
+    ports:
+      - "3011:3002"
+    environment:
+      PORT: 3002
+      DATABASE_URL: postgresql://orders_user:orders_pass@orders-db:5432/glowflow_orders_db
+      JWT_SECRET: glowflow_catalog_secret_key_change_in_production
+      NODE_ENV: production
+      CONSUL_URL: http://consul:8500
+      SERVICE_NAME: orders-service
+      CATALOG_SERVICE_NAME: makeup-catalog-service
+      CATALOG_FALLBACK_URL: http://makeup-catalog-service:3001
+      CORS_ORIGIN: http://localhost:3001
+    depends_on:
+      orders-db:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    networks:
+      - glowflow-network
+    restart: unless-stopped
+
 volumes:
   catalog-mongo-data:
   catalog-uploads:
+  orders-pg-data:
 
 networks:
   glowflow-network:

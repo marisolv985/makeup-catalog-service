@@ -1,9 +1,15 @@
 <%- include('../layouts/header') %>
+<%- include('../partials/breadcrumb') %>
+
+<% const isAdmin = typeof user !== 'undefined' && user && user.rol === 'ADMIN'; %>
+<% const isLogged = typeof user !== 'undefined' && user; %>
 
 <section class="page-header">
   <div class="page-header-content">
     <h1>Catálogo de Productos</h1>
-    <a href="/products/new" class="btn btn-primary"><i data-lucide="plus" style="width:16px;height:16px"></i> Nuevo Producto</a>
+    <% if (isAdmin) { %>
+      <a href="/products/new" class="btn btn-primary"><i data-lucide="plus" style="width:16px;height:16px"></i> Nuevo Producto</a>
+    <% } %>
   </div>
 </section>
 
@@ -25,6 +31,24 @@
 
     <div class="filters-advanced" id="filtersPanel">
       <div class="filters-advanced-grid">
+        <div class="filter-pill">
+          <label for="sortBy">Ordenar por</label>
+          <select id="sortBy" name="sortBy">
+            <option value="fechaCreacion" <%= sortBy === 'fechaCreacion' ? 'selected' : '' %>>Más recientes</option>
+            <option value="precio" <%= sortBy === 'precio' ? 'selected' : '' %>>Precio</option>
+            <option value="titulo" <%= sortBy === 'titulo' ? 'selected' : '' %>>Nombre</option>
+            <option value="stockDisponible" <%= sortBy === 'stockDisponible' ? 'selected' : '' %>>Stock</option>
+          </select>
+        </div>
+
+        <div class="filter-pill">
+          <label for="sortOrder">Dirección</label>
+          <select id="sortOrder" name="sortOrder">
+            <option value="desc" <%= sortOrder === 'desc' ? 'selected' : '' %>>Descendente</option>
+            <option value="asc" <%= sortOrder === 'asc' ? 'selected' : '' %>>Ascendente</option>
+          </select>
+        </div>
+
         <div class="filter-pill">
           <label for="categoria">Categoría</label>
           <select id="categoria" name="categoria">
@@ -63,6 +87,11 @@
         <div class="filter-pill">
           <label for="tono">Tono</label>
           <input type="text" id="tono" name="tono" value="<%= filters.tono || '' %>" placeholder="Ej: Rojo">
+        </div>
+
+        <div class="filter-pill">
+          <label for="stock">Stock mínimo</label>
+          <input type="number" id="stock" name="stock" value="<%= filters.stock || '' %>" placeholder="0" min="0">
         </div>
 
         <div class="filter-pill filter-pill-range">
@@ -127,8 +156,19 @@
 
           <div class="product-actions">
             <a href="/products/<%= product._id %>" class="btn btn-sm btn-outline"><i data-lucide="eye" style="width:14px;height:14px"></i> Ver</a>
-            <a href="/products/<%= product._id %>/edit" class="btn btn-sm btn-secondary"><i data-lucide="pencil" style="width:14px;height:14px"></i> Editar</a>
-            <button class="btn btn-sm btn-danger" onclick="confirmDelete('<%= product._id %>', '<%= product.titulo %>')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+            <% if (isLogged && product.estado === 'DISPONIBLE' && product.stockDisponible > 0) { %>
+              <form action="/cart/add" method="POST" style="display:inline;">
+                <input type="hidden" name="productoSku" value="<%= product.sku %>">
+                <input type="hidden" name="cantidad" value="1">
+                <button type="submit" class="btn btn-sm btn-primary" title="Agregar al carrito"><i data-lucide="shopping-cart" style="width:14px;height:14px"></i> Agregar al carrito</button>
+              </form>
+            <% } else if (!isLogged && product.estado === 'DISPONIBLE') { %>
+              <a href="/login" class="btn btn-sm btn-outline" title="Inicia sesión para comprar"><i data-lucide="log-in" style="width:14px;height:14px"></i></a>
+            <% } %>
+            <% if (isAdmin) { %>
+              <a href="/products/<%= product._id %>/edit" class="btn btn-sm btn-secondary"><i data-lucide="pencil" style="width:14px;height:14px"></i> Editar</a>
+              <button class="btn btn-sm btn-danger" onclick="confirmDelete('<%= product._id %>', '<%= product.titulo %>')"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+            <% } %>
           </div>
         </div>
       <% }); %>
@@ -140,11 +180,14 @@
       <i data-lucide="package-x" class="empty-icon"></i>
       <h3>No se encontraron productos</h3>
       <p>Intenta ajustar los filtros o agrega un nuevo producto al catálogo.</p>
-      <a href="/products/new" class="btn btn-primary"><i data-lucide="plus" style="width:16px;height:16px"></i> Nuevo Producto</a>
+      <% if (isAdmin) { %>
+        <a href="/products/new" class="btn btn-primary"><i data-lucide="plus" style="width:16px;height:16px"></i> Nuevo Producto</a>
+      <% } %>
     </div>
   <% } %>
 </section>
 
+<% if (isAdmin) { %>
 <div id="deleteModal" class="modal" style="display:none;">
   <div class="modal-content">
     <h3>Confirmar Eliminación</h3>
@@ -159,6 +202,7 @@
     </div>
   </div>
 </div>
+<% } %>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

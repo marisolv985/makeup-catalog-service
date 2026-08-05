@@ -36,12 +36,20 @@ class CosmeticsRepository {
   async decreaseStock(sku, cantidad) {
     return await Product.findOneAndUpdate(
       { sku: sku.toUpperCase(), stockDisponible: { $gte: cantidad } },
-      {
-        $inc: { stockDisponible: -cantidad },
-        $set: {
-          estado: cantidad === 0 ? 'AGOTADO' : undefined,
+      [
+        {
+          $set: {
+            stockDisponible: { $subtract: ['$stockDisponible', cantidad] },
+            estado: {
+              $cond: {
+                if: { $lte: [{ $subtract: ['$stockDisponible', cantidad] }, 0] },
+                then: 'AGOTADO',
+                else: '$estado',
+              },
+            },
+          },
         },
-      },
+      ],
       { new: true }
     );
   }
@@ -63,7 +71,7 @@ class CosmeticsRepository {
   }
 
   async getStock(sku) {
-    const product = await Product.findOne({ sku: sku.toUpperCase() }).select('sku stockDisponible');
+    const product = await Product.findOne({ sku: sku.toUpperCase() }).select('sku stockDisponible titulo precio imagenes');
     return product;
   }
 }

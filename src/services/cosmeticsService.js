@@ -1,5 +1,6 @@
 const cosmeticsRepository = require('../repositories/cosmeticsRepository');
 const ApiError = require('../utils/ApiError');
+const { escapeRegex } = require('../utils/helpers');
 
 class CosmeticsService {
   async createProduct(data) {
@@ -15,10 +16,10 @@ class CosmeticsService {
 
     const filters = {};
 
-    if (marca) filters.marca = { $regex: marca, $options: 'i' };
+    if (marca) filters.marca = { $regex: escapeRegex(marca), $options: 'i' };
     if (categoria) filters.categoria = categoria;
     if (tipoPiel) filters.tipoPielRecomendado = { $in: Array.isArray(tipoPiel) ? tipoPiel : [tipoPiel] };
-    if (tono) filters.tono = { $regex: tono, $options: 'i' };
+    if (tono) filters.tono = { $regex: escapeRegex(tono), $options: 'i' };
     if (estado) filters.estado = estado;
     if (precioMin || precioMax) {
       filters.precio = {};
@@ -29,11 +30,12 @@ class CosmeticsService {
       filters.stockDisponible = { $gte: parseInt(stock, 10) };
     }
     if (busqueda) {
+      const safe = escapeRegex(busqueda);
       filters.$or = [
-        { titulo: { $regex: busqueda, $options: 'i' } },
-        { descripcion: { $regex: busqueda, $options: 'i' } },
-        { marca: { $regex: busqueda, $options: 'i' } },
-        { ingredientes: { $regex: busqueda, $options: 'i' } },
+        { titulo: { $regex: safe, $options: 'i' } },
+        { descripcion: { $regex: safe, $options: 'i' } },
+        { marca: { $regex: safe, $options: 'i' } },
+        { ingredientes: { $regex: safe, $options: 'i' } },
       ];
     }
 
@@ -86,7 +88,7 @@ class CosmeticsService {
     if (!result) {
       throw ApiError.notFound(`Producto con SKU ${sku} no encontrado`);
     }
-    return { sku: result.sku, stockDisponible: result.stockDisponible };
+    return { sku: result.sku, stockDisponible: result.stockDisponible, titulo: result.titulo, precio: result.precio, imagenUrl: result.imagenes && result.imagenes.length > 0 ? result.imagenes[0] : null };
   }
 
   async exists(sku) {
